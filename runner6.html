@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Runner</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 1px solid #535353;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <script>
+        // Game state management
+        const GameState = {
+            START: 'start',
+            PLAYING: 'playing',
+            PAUSED: 'paused',
+            GAME_OVER: 'gameOver'
+        };
+
+        class Game {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.state = GameState.START;
+                this.score = 0;
+                this.highScore = 0;
+                this.gameSpeed = 6;
+                this.obstacleTimer = 0;
+                this.animationFrame = 0;
+                this.dayNightCycle = 0;
+                this.runner = new Runner(50, 300);
+                this.obstacles = [];
+                this.buildings = [];
+                this.buildings = this.initBuildings();
+                this.powerUpActive = false;
+                this.powerUpTimer = 0;
+                this.ground = { y: 350, height: 50, color: '#535353' };
+            }
+
+            initBuildings() {
+                const buildingCount = Math.ceil(this.canvas.width / 150) + 1;
+                for (let i = 0; i < buildingCount; i++) {
+                    this.buildings.push(new Building(i * 150, this.canvas.height));
+                }
+            }
+
+            update() {
+                if (this.state !== GameState.PLAYING) return;
+
+                this.runner.update();
+                this.updateObstacles();
+                this.buildings.forEach(building => {
+                    building.update(this.speed, this.canvas.width, this.canvas.height);
+                });
+                
+                this.score++;
+                if (this.score % 500 === 0) {
+                    this.gameSpeed += 0.5;
+                }
+
+                this.obstacleTimer++;
+                if (this.obstacleTimer > Math.max(70 / (this.gameSpeed / 5), 50)) {
+                    this.obstacleTimer = 0;
+                    if (this.obstacles.length === 0 || this.obstacles[this.obstacles.length - 1].x < this.canvas.width - 250) {
+                        this.generateObstacle();
+                    }
+                }
+
+                if (this.checkCollision()) {
+                    this.endGame();
+                }
+
+                this.animationFrame = (this.animationFrame + 1) % 20;
+                this.dayNightCycle = (this.dayNightCycle + 0.0005) % 1;
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.drawSky();
+                this.drawBuildings();
+                this.drawGround();
+                this.obstacles.forEach(obstacle => obstacle.draw(this.ctx));
+                this.runner.draw(this.ctx);
+
+                this.drawScore();
+
+                if (this.state === GameState.START) {
+                    this.drawStartScreen();
+                } else if (this.state === GameState.GAME_OVER) {
+                    this.drawGameOverScreen();
+                } else if (this.state === GameState.PAUSED) {
+                    this.drawPausedScreen();
+                }
+            }
+
+            drawSky() {
+                const gradient = this.ctx.createLinearGradient(0, 0, 0, this.ground.y);
+                const dayColor = [135, 206, 235];
+                const nightColor = [25, 25, 112];
+                const currentColor = dayColor.map((channel, index) => 
+                    Math.round(channel + (nightColor[index] - channel) * Math.sin(this.dayNightCycle * Math.PI))
+                );
+                gradient.addColorStop(0, `rgb(${currentColor.join(',')})`);
+                gradient.addColorStop(1, `rgba(${currentColor.join(',')}, 0.5)`);
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.ground.y);
+
+                // Draw sun/moon
+                this.ctx.fillStyle = this.dayNightCycle < 0.5 ? '#FFD700' : '#F0F0F0';
+                this.ctx.beginPath();
+                this.ctx.arc(100, 100 * Math.sin(this.dayNightCycle * Math.PI) + 50, 30, 0, 2 * Math.PI);
+                this.ctx.fill();
+
+                // Draw stars at night
+                if (this.dayNightCycle > 0.5) {
+                    this.ctx.fillStyle = 'white';
+                    for (let i = 0; i < 50; i++) {
+                        const x = Math.random() * this.canvas.width;
+                        const y = Math.random() * this.ground.y * 0.8;
+                        const size = Math.random() * 2 + 1;
+                        this.ctx.fillRect(x, y, size, size);
+                    }
+                }
+            }
+
+            drawBuildings() {
+                this.buildings.forEach(building => building.draw(this.ctx, this.dayNightCycle));
+            }
+
+            drawGround() {
+                this.ctx.fillStyle = this.ground.color;
+                this.ctx.fillRect(0, this.ground.y, this.canvas.width, this.ground.height);
+
+                this.ctx.fillStyle = '#A9A9A9';
+                this.ctx.fillRect(0, this.ground.y, this.canvas.width, 20);
+
+                this.ctx.strokeStyle = '#FFFFFF';
+                this.ctx.lineWidth = 2;
+                for (let i = 0; i < this.canvas.width; i += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(i, this.ground.y);
+                    this.ctx.lineTo(i + 30, this.ground.y);
+                    this.ctx.stroke();
+                }
+            }
+
+            generateObstacle() {
+                const obstacleTypes = [
+                    { width: 30, height: 50, y: this.ground.y - 50, color: '#FF0000', type: 'hydrant' },
+                    { width: 60, height: 70, y: this.ground.y - 70, color: '#000000', type: 'building' },
+                    { width: 50, height: 30, y: this.ground.y - 30, color: '#000000', type: 'car' },
+                    { width: 40, height: 20, y: this.ground.y - Math.random() * 100 - 40, color: '#303030', type: 'drone' },
+                    { width: 60, height: 15, y: this.ground.y, color: '#000000', type: 'hole' }
+                ];
+                const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+                const randomSpacing = Math.random() * 100 - 50; // Random spacing between 100 and 300
+                this.obstacles.push(new Obstacle(this.canvas.width + randomSpacing, type.y, type.width, type.height, type.color, type.type));
+            }
+
+            updateObstacles() {
+                for (let i = this.obstacles.length - 1; i >= 0; i--) {
+                    this.obstacles[i].update(this.gameSpeed);
+                    if (this.obstacles[i].x + this.obstacles[i].width < 0) {
+                        this.obstacles.splice(i, 1);
+                    }
+                }
+            }
+
+            drawScore() {
+                this.ctx.fillStyle = 'black';
+                this.ctx.font = '20px Arial';
+                this.ctx.fillText(`Score: ${this.score}`, 10, 30);
+                this.ctx.fillText(`High Score: ${this.highScore}`, 10, 60);
+            }
+
+            drawStartScreen() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '40px Arial';
+                this.ctx.fillText('City Runner', 310, 180);
+                this.ctx.font = '20px Arial';
+                this.ctx.fillText('Press SPACE to start', 310, 220);
+            }
+
+            drawGameOverScreen() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '40px Arial';
+                this.ctx.fillText('Game Over!', 310, 180);
+                this.ctx.font = '30px Arial';
+                this.ctx.fillText(`Final Score: ${this.score}`, 320, 230);
+                this.ctx.fillText(`High Score: ${this.highScore}`, 320, 270);
+                this.ctx.font = '20px Arial';
+                this.ctx.fillText('Press SPACE to restart', 310, 320);
+            }
+
+            drawPausedScreen() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '40px Arial';
+                this.ctx.fillText('Paused', 340, 200);
+                this.ctx.font = '20px Arial';
+                this.ctx.fillText('Press P to resume', 330, 240);
+            }
+
+            startGame() {
+                this.state = GameState.PLAYING;
+                this.score = 0;
+                this.gameSpeed = 6;
+                this.obstacles = [];
+                this.runner.reset();
+                this.obstacleTimer = 0;
+            }
+
+            pauseGame() {
+                if (this.state === GameState.PLAYING) {
+                    this.state = GameState.PAUSED;
+                } else if (this.state === GameState.PAUSED) {
+                    this.state = GameState.PLAYING;
+                }
+            }
+
+            endGame() {
+                this.state = GameState.GAME_OVER;
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                }
+            }
+
+            restart() {
+                this.buildings = [];
+                this.initBuildings();
+            }
+
+            checkCollision() {
+                return this.obstacles.some(obstacle => {
+                    const runnerHitbox = {
+                        x: this.runner.x + 5,
+                        y: this.runner.y + (this.runner.isDucking ? 30 : 0),
+                        width: this.runner.width - 10,
+                        height: this.runner.isDucking ? this.runner.duckHeight : this.runner.height
+                    };
+
+                    return runnerHitbox.x < obstacle.x + obstacle.width &&
+                        runnerHitbox.x + runnerHitbox.width > obstacle.x &&
+                        runnerHitbox.y < obstacle.y + obstacle.height &&
+                        runnerHitbox.y + runnerHitbox.height > obstacle.y;
+                });
+            }
+        }
+
+        class Runner {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 40;
+                this.height = 60;
+                this.duckHeight = 30;
+                this.color = '#4a4a4a';
+                this.isJumping = false;
+                this.isDucking = false;
+                this.jumpVelocity = 0;
+                this.gravity = 1.0;
+                this.animationFrame = 0;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(20, 55, 20, 5, 0, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Body
+                ctx.fillStyle = this.color;
+                if (this.isDucking) {
+                    ctx.fillRect(0, 30, this.width, this.duckHeight);
+                    // Head (ducking)
+                    ctx.beginPath();
+                    ctx.ellipse(20, 30, 15, 10, 0, 0, 2 * Math.PI);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(0, 0, this.width, this.height);
+                    // Head
+                    ctx.beginPath();
+                    ctx.arc(20, 0, 20, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+
+                // Eye
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(this.isDucking ? 30 : 28, this.isDucking ? 27 : -5, 5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(this.isDucking ? 32 : 30, this.isDucking ? 27 : -5, 2, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Animate legs when running
+                if (!this.isJumping && !this.isDucking) {
+                    ctx.fillStyle = this.color;
+                    const legOffset = Math.sin(this.animationFrame * 0.5) * 10;
+                    ctx.fillRect(5, this.height, 10, 10 + legOffset);
+                    ctx.fillRect(25, this.height, 10, 10 - legOffset);
+                }
+
+                ctx.restore();
+            }
+
+            update() {
+                if (this.isJumping) {
+                    this.y += this.jumpVelocity;
+                    this.jumpVelocity += this.gravity;
+
+                    if (this.y >= 300) {
+                        this.y = 300;
+                        this.isJumping = false;
+                        this.jumpVelocity = 0;
+                    }
+                }
+
+                this.animationFrame = (this.animationFrame + 1) % 20;
+            }
+
+            jump() {
+                if (!this.isJumping) {
+                    this.isJumping = true;
+                    this.jumpVelocity = -15;
+                }
+            }
+
+            duck() {
+                this.isDucking = true;
+            }
+
+            stand() {
+                this.isDucking = false;
+            }
+
+            reset() {
+                this.y = 300;
+                this.isJumping = false;
+                this.isDucking = false;
+                this.jumpVelocity = 0;
+            }
+        }
+
+        class Obstacle {
+            constructor(x, y, width, height, color, type) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.color = color;
+                this.type = type;
+
+                if (this.type === 'car') {
+                    this.carColor = this.randomCarColor();
+                }
+
+                if (this.type === 'building') {
+                    this.buildingColor = this.randomBuildingColor();
+                }
+            }
+
+            randomCarColor() {
+                const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            randomBuildingColor() {
+                const colors = ['#8B4513', '#A0522D', '#CD853F', '#DEB887', '#D2691E'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update(gameSpeed) {
+                this.x -= gameSpeed;
+            }
+
+            draw(ctx) {
+                if (this.type === 'hydrant') {
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(this.x + 10, this.y, 10, this.height);
+                    ctx.fillRect(this.x, this.y + 10, 30, 10);
+                    ctx.fillStyle = '#C0C0C0';
+                    ctx.beginPath();
+                    ctx.arc(this.x + 15, this.y, 7, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (this.type === 'car') {
+                    ctx.fillStyle = this.carColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(this.x + 5, this.y + 20, 15, 15);
+                    ctx.fillRect(this.x + this.width - 20, this.y + 20, 15, 15);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(this.x + 5, this.y + 5, 15, 10);
+                } else if (this.type === 'building') {
+                    ctx.fillStyle = this.buildingColor;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.fillStyle = '#FFFFFF';
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 2; j++) {
+                            ctx.fillRect(this.x + 10 + i * 20, this.y + 10 + j * 20, 10, 10);
+                        }
+                    }
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(this.x + 25, this.y + 40, 10, 30);
+                } else if (this.type === 'drone') {
+                    ctx.fillStyle = '#303030';
+                    ctx.fillRect(this.x, this.y + 5, this.width, 10);
+                    ctx.fillStyle = '#FF0000';
+                    ctx.beginPath();
+                    ctx.arc(this.x + 5, this.y + 10, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#00FF00';
+                    ctx.fillRect(this.x + this.width - 5, this.y + 8, 3, 3);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(this.x + 10, this.y, 5, 5);
+                    ctx.fillRect(this.x + this.width - 15, this.y, 5, 5);
+                    ctx.fillRect(this.x + 10, this.y + 15, 5, 5);
+                    ctx.fillRect(this.x + this.width - 15, this.y + 15, 5, 5);
+                } else if (this.type === 'hole') {
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + this.width / 2, this.y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        class Building {
+            constructor(x, canvasHeight) {
+                this.x = x;
+                this.width = Math.random() * 50 + 100; // Random width between 100 and 150
+                this.height = Math.random() * 200 + 100; // Random height
+                this.y = canvasHeight - this.height; // Start from ground
+                this.windows = this.generateWindows();
+                this.color = this.randomBuildingColor();
+            }
+
+            randomBuildingColor() {
+                const colors = ['#8B4513', '#A0522D', '#CD853F', '#DEB887', '#D2691E'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            generateWindows() {
+                const windows = [];
+                const rows = Math.floor(this.height / 40);
+                const cols = Math.floor(this.width / 40);
+
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        windows.push({
+                            x: col * 40 + 10,
+                            y: row * 40 + 10,
+                            lit: Math.random() < 0.7,
+                            flickerTimer: Math.random() * 1000
+                        });
+                    }
+                }
+                return windows;
+            }
+
+            update(gameSpeed, canvasWidth, canvasHeight) {
+                this.x -= gameSpeed / 2;
+                if (this.x + this.width < 0) {
+                    this.x = canvasWidth;
+                    this.width = Math.random() * 50 + 100;
+                    this.height = Math.random() * 200 + 100;
+                    this.y = canvasHeight - this.height;
+                    this.windows = this.generateWindows();
+                    this.color = this.randomBuildingColor();
+                }
+            }
+
+            draw(ctx, dayNightCycle) {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                this.windows.forEach(window => {
+                    window.flickerTimer += 1;
+                    if (window.flickerTimer > 1000) {
+                        window.flickerTimer = 0;
+                        window.lit = Math.random() < 0.7;
+                    }
+
+                    ctx.fillStyle = window.lit ? `rgba(255, 255, 0, ${0.7 * (1 - dayNightCycle)})` : 'rgba(100, 100, 100, 0.5)';
+                    ctx.fillRect(this.x + window.x, this.y + window.y, 20, 20);
+                });
+            }
+        }
+
+        class Sky {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.stars = this.generateStars();
+                this.sunMoonX = 0;
+            }
+
+            generateStars() {
+                const stars = [];
+                for (let i = 0; i < 100; i++) {
+                    stars.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height / 2,
+                        size: Math.random() * 2 + 1,
+                        blinkTimer: Math.random() * 600
+                    });
+                }
+                return stars;
+            }
+
+            update(dayNightCycle) {
+                this.sunMoonX = (this.sunMoonX + 0.1) % this.canvas.width;
+                this.stars.forEach(star => {
+                    star.blinkTimer += 0.2;
+                    if (star.blinkTimer > 400) {
+                        star.blinkTimer = 0;
+                    }
+                });
+            }
+
+            draw(ctx, dayNightCycle) {
+                // Sky gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+                gradient.addColorStop(0, `rgb(${135 - 135 * dayNightCycle}, ${206 - 206 * dayNightCycle}, ${235 - 235 * dayNightCycle})`);
+                gradient.addColorStop(1, `rgb(${255 - 255 * dayNightCycle}, ${255 - 255 * dayNightCycle}, ${255 - 255 * dayNightCycle})`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Stars
+                if (dayNightCycle > 0.5) {
+                    this.stars.forEach(star => {
+                        const opacity = Math.sin(star.blinkTimer * Math.PI / 400) * 0.5 + 0.5;
+                        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * (dayNightCycle - 0.5) * 2})`;
+                        ctx.beginPath();
+                        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+
+                // Sun/Moon
+                ctx.fillStyle = dayNightCycle < 0.5 ? 'yellow' : 'lightgray';
+                ctx.beginPath();
+                const yPos = this.canvas.height / 4 + Math.sin(this.sunMoonX * Math.PI / this.canvas.width) * this.canvas.height / 4;
+                ctx.arc(this.sunMoonX, yPos, 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const canvas = document.getElementById('gameCanvas');
+        const game = new Game(canvas);
+
+        function gameLoop() {
+            game.update();
+            game.draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                if (game.state === GameState.START || game.state === GameState.GAME_OVER) {
+                    game.startGame();
+                } else if (game.state === GameState.PLAYING) {
+                    game.runner.jump();
+                }
+            } else if (event.code === 'ArrowDown') {
+                game.runner.duck();
+            } else if (event.code === 'KeyP') {
+                game.pauseGame();
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.code === 'ArrowDown') {
+                game.runner.stand();
+            }
+        });
+    </script>
+</body>
+</html>

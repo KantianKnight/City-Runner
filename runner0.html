@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Runner</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 1px solid #535353;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game variables
+        let isJumping = false;
+        let isDucking = false;
+        let jumpVelocity = 0;
+        const gravity = 0.6;
+        let score = 0;
+        let highScore = 0;
+        let gameSpeed = 5;
+        let obstacleTimer = 0;
+        let gameOver = false;
+        let animationFrame = 0;
+        let dayNightCycle = 0;
+
+        // Runner character
+        const runner = {
+            x: 50,
+            y: 300,
+            width: 40,
+            height: 60,
+            duckHeight: 30,
+            color: '#4a4a4a'
+        };
+
+        // Ground
+        const ground = {
+            y: 350,
+            height: 50,
+            color: '#535353'
+        };
+
+        // Obstacles array
+        const obstacles = [];
+
+        // Obstacle types
+        const obstacleTypes = [
+            { width: 60, height: 80, y: ground.y - 80, color: '#8B4513', type: 'hydrant' },  // Fire hydrant
+            { width: 100, height: 150, y: ground.y - 150, color: '#A9A9A9', type: 'building' },  // Small building
+            { width: 80, height: 40, y: ground.y - 40, color: '#4682B4', type: 'car' },  // Car
+            { width: 60, height: 20, y: ground.y - 120, color: '#9c59cf', type: 'flying' },    // Flying obstacle (bird/drone)
+            { width: 80, height: 20, y: ground.y, color: '#d64933', type: 'hole' }    // Hole in the ground
+        ];
+
+        // Background buildings
+        const buildings = [];
+        for (let i = 0; i < 5; i++) {
+            buildings.push({
+                x: i * 200,
+                width: 150,
+                height: Math.random() * 150 + 100
+            });
+        }
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (!gameOver) {
+                updateRunner();
+                updateObstacles();
+                
+                // Increase score and game speed
+                score++;
+                if (score % 500 === 0) {
+                    gameSpeed += 0.5;
+                }
+
+                // Generate new obstacles
+                obstacleTimer++;
+                if (obstacleTimer > Math.max(50 / (gameSpeed / 5), 30)) {
+                    obstacleTimer = 0;
+                    if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 200) {
+                        generateObstacle();
+                    }
+                }
+
+                // Collision detection
+                if (checkCollision()) {
+                    endGame();
+                }
+
+                // Update animation frame
+                animationFrame = (animationFrame + 1) % 20;
+
+                // Update day/night cycle
+                dayNightCycle = (dayNightCycle + 0.001) % 1;
+            }
+
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Update runner position
+        function updateRunner() {
+            if (isJumping) {
+                runner.y += jumpVelocity;
+                jumpVelocity += gravity;
+
+                if (runner.y >= 300) {
+                    runner.y = 300;
+                    isJumping = false;
+                    jumpVelocity = 0;
+                }
+            }
+        }
+
+        // Draw game elements
+        function drawGame() {
+            drawSky();
+            drawBuildings();
+            drawGround();
+            drawObstacles();
+            drawRunner();
+
+            // Draw score
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 650, 30);
+            ctx.fillText(`High Score: ${highScore}`, 650, 60);
+
+            if (gameOver) {
+                drawGameOver();
+            }
+        }
+
+        // Draw sky with day/night cycle
+        function drawSky() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, ground.y);
+            const dayColor = [135, 206, 235];
+            const nightColor = [25, 25, 112];
+            const currentColor = dayColor.map((channel, index) => 
+                Math.round(channel + (nightColor[index] - channel) * Math.sin(dayNightCycle * Math.PI))
+            );
+            gradient.addColorStop(0, `rgb(${currentColor.join(',')})`);
+            gradient.addColorStop(1, `rgba(${currentColor.join(',')}, 0.5)`);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, ground.y);
+
+            // Draw sun/moon
+            ctx.fillStyle = dayNightCycle < 0.5 ? '#FFD700' : '#F0F0F0';
+            ctx.beginPath();
+            ctx.arc(100, 100 * Math.sin(dayNightCycle * Math.PI) + 50, 30, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Draw background buildings
+        function drawBuildings() {
+            buildings.forEach((building, index) => {
+                ctx.fillStyle = `rgba(50, 50, 50, ${0.5 + index * 0.1})`;
+                ctx.fillRect(building.x, ground.y - building.height, building.width, building.height);
+                
+                // Windows
+                ctx.fillStyle = 'yellow';
+                for (let i = 0; i < 5; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (Math.random() < 0.7) {
+                            ctx.fillRect(building.x + 10 + i * 30, ground.y - building.height + 10 + j * 40, 20, 30);
+                        }
+                    }
+                }
+
+                // Move buildings
+                building.x -= gameSpeed / 2;
+                if (building.x + building.width < 0) {
+                    building.x = canvas.width;
+                    building.height = Math.random() * 150 + 100;
+                }
+            });
+        }
+
+        // Draw ground
+        function drawGround() {
+            // Main ground
+            ctx.fillStyle = ground.color;
+            ctx.fillRect(0, ground.y, canvas.width, ground.height);
+
+            // Sidewalk
+            ctx.fillStyle = '#A9A9A9';
+            ctx.fillRect(0, ground.y, canvas.width, 20);
+
+            // Sidewalk lines
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, ground.y);
+                ctx.lineTo(i + 30, ground.y);
+                ctx.stroke();
+            }
+        }
+
+        // Generate obstacle
+        function generateObstacle() {
+            const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+            obstacles.push({
+                x: canvas.width,
+                y: type.y,
+                width: type.width,
+                height: type.height,
+                color: type.color,
+                type: type.type
+            });
+        }
+
+        // Draw obstacles
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                ctx.save();
+                ctx.translate(obstacle.x, obstacle.y);
+
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(obstacle.width / 2, obstacle.height + 5, obstacle.width / 2, 5, 0, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Main obstacle
+                ctx.fillStyle = obstacle.color;
+                if (obstacle.type === 'hydrant') {
+                    // Fire hydrant
+                    ctx.fillRect(0, 0, obstacle.width, obstacle.height);
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(10, 10, obstacle.width - 20, 20);
+                } else if (obstacle.type === 'building') {
+                    // Small building
+                    ctx.fillRect(0, 0, obstacle.width, obstacle.height);
+                    // Windows
+                    ctx.fillStyle = 'skyblue';
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 4; j++) {
+                            ctx.fillRect(10 + i * 30, 10 + j * 35, 20, 25);
+                        }
+                    }
+                } else if (obstacle.type === 'car') {
+                    // Car
+                    ctx.fillRect(0, 20, obstacle.width, obstacle.height - 20);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 20);
+                    ctx.lineTo(20, 0);
+                    ctx.lineTo(60, 0);
+                    ctx.lineTo(80, 20);
+                    ctx.fill();
+                    // Windows
+                    ctx.fillStyle = 'skyblue';
+                    ctx.fillRect(25, 5, 30, 15);
+                    // Wheels
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(15, 40, 10, 0, 2 * Math.PI);
+                    ctx.arc(65, 40, 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                } else if (obstacle.type === 'flying') {
+                    // Bird/drone
+                    ctx.beginPath();
+                    ctx.moveTo(0, obstacle.height / 2);
+                    ctx.lineTo(obstacle.width / 2, 0);
+                    ctx.lineTo(obstacle.width, obstacle.height / 2);
+                    ctx.lineTo(obstacle.width / 2, obstacle.height);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (obstacle.type === 'hole') {
+                    // Hole in the ground
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.ellipse(obstacle.width / 2, 0, obstacle.width / 2, obstacle.height, 0, 0, Math.PI);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            });
+        }
+
+        // Update obstacles
+        function updateObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].x -= gameSpeed;
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                }
+            }
+        }
+
+        // Draw runner
+        function drawRunner() {
+            ctx.save();
+            ctx.translate(runner.x, runner.y);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(20, 55, 20, 5, 0, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Body
+            ctx.fillStyle = runner.color;
+            if (isDucking) {
+                ctx.fillRect(0, 30, runner.width, runner.duckHeight);
+                // Head (ducking)
+                ctx.beginPath();
+                ctx.ellipse(20, 30, 15, 10, 0, 0, 2 * Math.PI);
+                ctx.fill();
+            } else {
+                ctx.fillRect(0, 0, runner.width, runner.height);
+                // Head
+                ctx.beginPath();
+                ctx.arc(20, 0, 20, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // Eye
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(isDucking ? 30 : 28, isDucking ? 27 : -5, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(isDucking ? 32 : 30, isDucking ? 27 : -5, 2, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Animate legs when running
+            if (!isJumping && !isDucking) {
+                ctx.fillStyle = runner.color;
+                const legOffset = Math.sin(animationFrame * 0.5) * 10;
+                ctx.fillRect(5, runner.height, 10, 10 + legOffset);
+                ctx.fillRect(25, runner.height, 10, 10 - legOffset);
+            }
+
+            ctx.restore();
+        }
+
+        // Check collision
+        function checkCollision() {
+            return obstacles.some(obstacle => {
+                const runnerHitbox = {
+                    x: runner.x + 5,
+                    y: runner.y + (isDucking ? 30 : 0),
+                    width: runner.width - 10,
+                    height: isDucking ? runner.duckHeight : runner.height
+                };
+
+                return runnerHitbox.x < obstacle.x + obstacle.width &&
+                       runnerHitbox.x + runnerHitbox.width > obstacle.x &&
+                       runnerHitbox.y < obstacle.y + obstacle.height &&
+                       runnerHitbox.y + runnerHitbox.height > obstacle.y;
+            });
+        }
+
+        // End game
+        function endGame() {
+            gameOver = true;
+            if (score > highScore) {
+                highScore = score;
+            }
+        }
+
+        // Draw game over screen
+        function drawGameOver() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.font = '40px Arial';
+            ctx.fillText('Game Over!', 310, 180);
+            ctx.font = '30px Arial';
+            ctx.fillText(`Final Score: ${score}`, 320, 230);
+            ctx.fillText(`High Score: ${highScore}`, 320, 270);
+            ctx.font = '20px Arial';
+            ctx.fillText('Press SPACE to restart', 310, 320);
+        }
+
+        // Reset game
+        function resetGame() {
+            score = 0;
+            gameSpeed = 5;
+            obstacleTimer = 0;
+            gameOver = false;
+            obstacles.length = 0;
+            runner.y = 300;
+            isJumping = false;
+            isDucking = false;
+            jumpVelocity = 0;
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                if (gameOver) {
+                    resetGame();
+                } else if (!isJumping) {
+                    isJumping = true;
+                    jumpVelocity = -15;
+                }
+            } else if (event.code === 'ArrowDown') {
+                isDucking = true;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.code === 'ArrowDown') {
+                isDucking = false;
+            }
+        });
+
+        // Start the game
+        gameLoop();
+    </script>
+</body>
+</html>
