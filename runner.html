@@ -36,7 +36,7 @@
                 this.ctx = canvas.getContext('2d');
                 this.state = GameState.START;
                 this.score = 0;
-                this.highScore = 0;
+                this.highScore = this.getHighScore();
                 this.gameSpeed = 6;
                 this.obstacleTimer = 0;
                 this.animationFrame = 0;
@@ -255,19 +255,49 @@
             }
 
             drawScore() {
-                this.ctx.fillStyle = 'black';
-                this.ctx.font = '20px Arial';
-                this.ctx.fillText(`Score: ${this.score}`, 10, 30);
-                this.ctx.fillText(`High Score: ${this.highScore}`, 10, 60);
+                // this.ctx.fillStyle = 'black';
+                // this.ctx.font = '20px Arial';
+                // this.ctx.fillText(`Score: ${this.score}`, 10, 30);
+                // this.ctx.fillText(`High Score: ${this.highScore}`, 10, 60);
+
+                // Set the font and size
+                this.ctx.font = '22px "Press Start 2P", monospace';
+
+                // Calculate the width of the score text
+                const scoreWidth = this.ctx.measureText(`Score: ${this.score}`).width;
+                const highScoreWidth = this.ctx.measureText(`High Score: ${this.highScore}`).width;
+
+                // Create a linear gradient for the score
+                const scoreGradient = this.ctx.createLinearGradient(0, 0, scoreWidth + 20, 0);
+                scoreGradient.addColorStop(0, '#FFD700');
+                scoreGradient.addColorStop(0.5, '#FFA500');
+                scoreGradient.addColorStop(1, '#FF4500');
+
+                // Create a linear gradient for the high score
+                const highScoreGradient = this.ctx.createLinearGradient(0, 0, highScoreWidth + 20, 0);
+                highScoreGradient.addColorStop(0, '#FFD700');
+                highScoreGradient.addColorStop(0.5, '#FFA500');
+                highScoreGradient.addColorStop(1, '#FF4500');
+
+                // // Draw the score and high score with a semi-transparent background
+                // this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                // this.ctx.fillRect(10, 10, scoreWidth + 20, 40);
+                // this.ctx.fillRect(10, 50, highScoreWidth + 20, 40);
+
+                // Set the gradient as the fill style for the score and high score text
+                this.ctx.fillStyle = scoreGradient;
+                this.ctx.fillText(`Score: ${this.score}`, 20, 35);
+                this.ctx.fillStyle = highScoreGradient;
+                this.ctx.fillText(`High Score: ${this.highScore}`, 20, 75);
             }
 
             drawStartScreen() {
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 this.ctx.fillStyle = 'white';
-                this.ctx.font = '40px Arial';
+                this.ctx.font = '40px "Press Start 2P", monospace';
                 this.ctx.fillText('City Runner', 310, 180);
-                this.ctx.font = '20px Arial';
+                this.ctx.font = '20px "Press Start 2P", monospace';
                 this.ctx.fillText('Press SPACE to start', 310, 220);
             }
 
@@ -275,12 +305,12 @@
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 this.ctx.fillStyle = 'white';
-                this.ctx.font = '40px Arial';
+                this.ctx.font = '40px "Press Start 2P", monospace';
                 this.ctx.fillText('Game Over!', 310, 180);
-                this.ctx.font = '30px Arial';
+                this.ctx.font = '30px "Press Start 2P", monospace';
                 this.ctx.fillText(`Final Score: ${this.score}`, 320, 230);
                 this.ctx.fillText(`High Score: ${this.highScore}`, 320, 270);
-                this.ctx.font = '20px Arial';
+                this.ctx.font = '20px "Press Start 2P", monospace';
                 this.ctx.fillText('Press SPACE to restart', 310, 320);
             }
 
@@ -288,9 +318,9 @@
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 this.ctx.fillStyle = 'white';
-                this.ctx.font = '40px Arial';
+                this.ctx.font = '40px "Press Start 2P", monospace';
                 this.ctx.fillText('Paused', 340, 200);
-                this.ctx.font = '20px Arial';
+                this.ctx.font = '20px "Press Start 2P", monospace';
                 this.ctx.fillText('Press P to resume', 330, 240);
             }
 
