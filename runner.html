@@ -418,7 +418,11 @@
                 ctx.fill();
 
                 // Body
-                if (this.isBusinessMode) {
+                if (this.isSpeedBoost && this.isBusinessMode) {
+                    this.drawBusinessFlash(ctx);
+                } else if (this.isSpeedBoost) {
+                    this.drawFlash(ctx);
+                } else if (this.isBusinessMode) {
                     this.drawBusinessMonkey(ctx);
                 } else if (this.isDucking) {
                     this.drawDuckingMonkey(ctx);
@@ -427,12 +431,116 @@
                 } else {
                     this.drawRunningMonkey(ctx);
                 }
-                
-                if (this.isSpeedBoost) {
-                    this.drawSpeedBoostEffect(ctx);
-                } 
 
                 ctx.restore();
+            }
+
+            drawFlash(ctx) {
+                // Body
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(10, 20, 30, 30);
+
+                // Head
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(5, 0, 25, 20);
+
+                // Face
+                ctx.fillStyle = '#FFFF00';
+                ctx.fillRect(10, 5, 15, 15);
+
+                // Eyes
+                ctx.fillStyle = 'white';
+                ctx.fillRect(13, 8, 4, 4);
+                ctx.fillRect(23, 8, 4, 4);
+
+                // Lightning bolt emblem
+                ctx.fillStyle = '#FFFF00';
+                ctx.beginPath();
+                ctx.moveTo(20, 25);
+                ctx.lineTo(25, 35);
+                ctx.lineTo(20, 35);
+                ctx.lineTo(30, 50);
+                ctx.lineTo(25, 40);
+                ctx.lineTo(30, 40);
+                ctx.lineTo(20, 25);
+                ctx.fill();
+
+                // Legs
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(15, 50, 5, 10);
+                ctx.fillRect(30, 50, 5, 10);
+
+                // Speed lines
+                ctx.strokeStyle = '#FFFF00';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
+                    ctx.lineTo(5 - i * 10, 40 + i * 10);
+                    ctx.stroke();
+                }
+            }
+
+            drawBusinessFlash(ctx) {
+                // Body (suit)
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(10, 20, 30, 30);
+
+                // Head
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(5, 0, 25, 20);
+
+                // Face
+                ctx.fillStyle = '#FFFF00';
+                ctx.fillRect(10, 5, 15, 15);
+
+                // Eyes
+                ctx.fillStyle = 'white';
+                ctx.fillRect(13, 8, 4, 4);
+                ctx.fillRect(23, 8, 4, 4);
+
+                // Tie
+                ctx.fillStyle = '#FF0000';
+                ctx.beginPath();
+                ctx.moveTo(25, 20);
+                ctx.lineTo(30, 30);
+                ctx.lineTo(25, 40);
+                ctx.lineTo(20, 30);
+                ctx.closePath();
+                ctx.fill();
+
+                // Lightning bolt emblem
+                ctx.fillStyle = '#FFFF00';
+                ctx.beginPath();
+                ctx.moveTo(20, 25);
+                ctx.lineTo(25, 35);
+                ctx.lineTo(20, 35);
+                ctx.lineTo(30, 50);
+                ctx.lineTo(25, 40);
+                ctx.lineTo(30, 40);
+                ctx.lineTo(20, 25);
+                ctx.fill();
+
+                // Legs
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(15, 50, 5, 10);
+                ctx.fillRect(30, 50, 5, 10);
+
+                // Briefcase (glowing)
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(35, 40, 20, 25);
+                ctx.fillStyle = '#FFFF00';
+                ctx.fillRect(38, 45, 5, 2);
+
+                // Speed lines
+                ctx.strokeStyle = '#FFFF00';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
+                    ctx.lineTo(5 - i * 10, 40 + i * 10);
+                    ctx.stroke();
+                }
             }
 
             drawRunningMonkey(ctx) {
@@ -617,20 +725,22 @@
             }
 
             drawSpeedBoostEffect(ctx) {
+                // Instead of drawing lightning, we'll add a glowing outline to the character
                 ctx.save();
-                ctx.globalAlpha = 0.7;
                 ctx.strokeStyle = '#FF0000';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#FF0000';
+                ctx.shadowBlur = 10;
                 
-                // Draw lightning bolts behind the character
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(5 - i * 10, this.height / 2 + 20);
-                    ctx.lineTo(-5 - i * 10, this.height / 2 + 30);
-                    ctx.lineTo(- i * 10, this.height / 2 + 25);
-                    ctx.lineTo(-10 - i * 10, this.height / 2 + 40);
-                    ctx.stroke();
-                }
+                // Outline the body
+                ctx.strokeRect(10, 20, 30, 30);
+                
+                // Outline the head
+                ctx.strokeRect(5, 0, 25, 20);
+                
+                // Outline the legs
+                ctx.strokeRect(15, 50, 5, 10);
+                ctx.strokeRect(30, 50, 5, 10);
                 
                 ctx.restore();
             }
@@ -684,14 +794,13 @@
         }
 
         class Obstacle {
-            constructor(x, y, width, height, color, type, speed = 0) {
+            constructor(x, y, width, height, color, type) {
                 this.x = x;
                 this.y = y;
                 this.width = width;
                 this.height = height;
                 this.color = color;
                 this.type = type;
-                this.speed = speed;
 
                 if (this.type === 'car') {
                     this.carColor = this.randomCarColor();
@@ -701,14 +810,11 @@
                     this.houseColor = this.randomHouseColor();
                 }
 
-                // if (this.type === 'drone') {
-                //     this.y += Math.sin(this.x * 0.02) * 2; // Make drones move in a wave pattern
-                //     this.x -= this.speed; // Additional horizontal movement for drones
-                // }
-
                 if (this.type === 'drone') {
                     this.baseY = y;
                     this.angle = 0;
+                    this.oscillationSpeed = Math.random() * 0.05 + 0.02; // Variable oscillation speed
+                    this.oscillationAmplitude = Math.random() * 20 + 10; // Variable oscillation amplitude
                 }
             }
 
@@ -725,8 +831,8 @@
             update(gameSpeed) {
                 this.x -= gameSpeed;
                 if (this.type === 'drone') {
-                    this.angle += 0.05;
-                    this.y = this.baseY + Math.sin(this.angle) * 30;
+                    this.angle += this.oscillationSpeed;
+                    this.y = this.baseY + Math.sin(this.angle) * this.oscillationAmplitude;
                 }
             }
 
