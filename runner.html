@@ -63,8 +63,9 @@
                 this.obstacleFrequency = 100;
 
                 this.sounds = {
-                    jump: new Audio('http://codeskulptor-demos.commondatastorage.googleapis.com/pang/arrow.mp3'),
-                    powerUp: new Audio('http://commondatastorage.googleapis.com/codeskulptor-assets/week7-brrring.m4a'),
+                    jump: new Audio('http://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3'),
+                    powerUp: new Audio('http://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/bonus.wav'),
+                    crash: new Audio('http://codeskulptor-demos.commondatastorage.googleapis.com/descent/Crumble%20Sound.mp3'),
                     gameOver: new Audio('http://commondatastorage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg')
                 };
 
@@ -77,8 +78,10 @@
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     if (this.state === GameState.PLAYING) {
-                        this.runner.jump();
-                        this.sounds.jump.play();
+                        if (this.runner.isJumping) {
+                            this.runner.jump();
+                            this.sounds.jump.play();
+                        }
                     } else if (this.state === GameState.START || this.state === GameState.GAME_OVER) {
                         this.startGame();
                     }
@@ -395,6 +398,8 @@
 
                     if (this.checkCollision(runnerHitbox, obstacle)) {
                         if (this.businessModeActive) {
+                            this.sounds.crash.play();
+
                             // Destroy obstacle and add bonus points
                             this.score += 100;
                             this.obstacles = this.obstacles.filter(obs => obs !== obstacle);
@@ -412,23 +417,7 @@
                     object1.y < object2.y + object2.height &&
                     object1.y + object1.height > object2.y;
             }
-            
-            // checkCollision() {
-            //     return this.obstacles.some(obstacle => {
-            //         const runnerHitbox = {
-            //             x: this.runner.x + 5,
-            //             y: this.runner.y + (this.runner.isDucking ? 40 : 0),
-            //             width: this.runner.width - 10,
-            //             height: this.runner.isDucking ? this.runner.duckHeight : this.runner.height
-            //         };
-
-            //         return runnerHitbox.x < obstacle.x + obstacle.width &&
-            //             runnerHitbox.x + runnerHitbox.width > obstacle.x &&
-            //             runnerHitbox.y < obstacle.y + obstacle.height &&
-            //             runnerHitbox.y + runnerHitbox.height > obstacle.y;
-            //     });
-            // }
-
+        
             generatePowerUp() {
                 const y = 150 + Math.random() * 150; 
                 this.powerUp = new PowerUp(this.canvas.width, y);
