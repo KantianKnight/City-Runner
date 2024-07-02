@@ -56,11 +56,8 @@
                 this.businessModeDuration = 300; // 5 seconds at 60 fps
 
                 // New features
-                this.scoreMultiplier = 1;
-                this.combo = 0;
-                this.maxCombo = 0;
                 this.difficultyTimer = 0;
-                this.obstacleFrequency = 100;
+                this.obstacleGap = 0;
 
                 this.sounds = {
                     jump: new Audio('http://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3'),
@@ -70,56 +67,6 @@
                 };
 
                 this.particles = [];
-
-                this.resizeCanvas();
-                window.addEventListener('resize', () => this.resizeCanvas());
-
-                // Touch controls
-                this.canvas.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    if (this.state === GameState.PLAYING) {
-                        if (this.runner.isJumping) {
-                            this.runner.jump();
-                            this.sounds.jump.play();
-                        }
-                    } else if (this.state === GameState.START || this.state === GameState.GAME_OVER) {
-                        this.startGame();
-                    }
-                });
-
-                let touchStartY;
-                this.canvas.addEventListener('touchstart', (e) => {
-                    touchStartY = e.touches[0].clientY;
-                });
-
-                this.canvas.addEventListener('touchmove', (e) => {
-                    const touchEndY = e.touches[0].clientY;
-                    if (touchEndY > touchStartY + 30) {
-                        this.runner.duck();
-                    }
-                });
-
-                this.canvas.addEventListener('touchend', () => {
-                    this.runner.stand();
-                });
-            }
-
-            resizeCanvas() {
-                // const maxWidth = window.innerWidth;
-                // const maxHeight = window.innerHeight;
-                // const aspectRatio = 16 / 9;
-
-                // let newWidth = maxWidth;
-                // let newHeight = maxWidth / aspectRatio;
-
-                // if (newHeight > maxHeight) {
-                //     newHeight = maxHeight;
-                //     newWidth = maxHeight * aspectRatio;
-                // }
-
-                // this.canvas.width = newWidth;
-                // this.canvas.height = newHeight;
-                // this.ground.y = this.canvas.height - 50;
             }
 
             getHighScore() {
@@ -147,22 +94,18 @@
                 });
                 this.sky.update(this.gameSpeed);
                 
-                this.score += Math.round(this.scoreMultiplier);
+                this.score++;
                 if (this.score % 500 === 0) {
                     this.gameSpeed += 0.5;
                 }
 
                 this.obstacleTimer++;
-                this.difficultyTimer++;
+                if (!this.obstacleGap)
+                    this.obstacleGap = Math.random() * 40 + 20;
 
-                // Gradually decrease obstacle frequency
-                if (this.difficultyTimer > 600) {  // Every 10 seconds
-                    this.obstacleFrequency = Math.max(50, this.obstacleFrequency - 5);
-                    this.difficultyTimer = 0;
-                }
-
-                if (this.obstacleTimer > this.obstacleFrequency) {
+                if (this.obstacleTimer > this.obstacleGap) {
                     this.obstacleTimer = 0;
+                    this.obstacleGap = 0;
                     if (this.obstacles.length === 0 || this.obstacles[this.obstacles.length - 1].x < this.canvas.width - 250) {
                         this.generateObstacle();
                     }
@@ -197,10 +140,6 @@
 
                 if (this.checkObstacleCollision()) {
                     this.endGame();
-                } else {
-                    this.combo++;
-                    this.maxCombo = Math.max(this.maxCombo, this.combo);
-                    this.scoreMultiplier = 1 + Math.floor(this.combo / 10) * 0.1;
                 }
 
                 // Update particles
@@ -233,12 +172,6 @@
 
                 // Draw particles
                 this.particles.forEach(particle => particle.draw(this.ctx));
-
-                // Draw combo and multiplier
-                this.ctx.fillStyle = 'black';
-                this.ctx.font = '20px Arial';
-                this.ctx.fillText(`Combo: ${this.combo}`, 10, 90);
-                this.ctx.fillText(`Multiplier: x${this.scoreMultiplier.toFixed(1)}`, 10, 120);
 
                 if (this.state === GameState.START) {
                     this.drawStartScreen();
