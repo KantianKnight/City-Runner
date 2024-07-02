@@ -55,7 +55,6 @@
                 this.businessModeTimer = 0;
                 this.businessModeDuration = 300; // 5 seconds at 60 fps
 
-                // New features
                 this.difficultyTimer = 0;
                 this.obstacleGap = 0;
 
@@ -67,6 +66,11 @@
                 };
 
                 this.particles = [];
+
+                // New Features
+                this.speedBoostActive = false;
+                this.speedBoostTimer = 0;
+                this.speedBoostDuration = 300; // 5 seconds at 60 fps
             }
 
             getHighScore() {
@@ -94,7 +98,8 @@
                 });
                 this.sky.update(this.gameSpeed);
                 
-                this.score++;
+                this.score++; 
+                if (this.speedBoostActive) this.score++;
                 if (this.score % 500 === 0) {
                     this.gameSpeed += 0.5;
                 }
@@ -124,7 +129,12 @@
 
                 // Check for power-up collection
                 if (this.powerUp && this.checkPowerUpCollision()) {
-                    this.activateBusinessMode();
+                    if (this.powerUp.type === 'business') {
+                        game.activateBusinessMode();
+                    } else if (this.powerUp.type === 'speed') {
+                        game.activateSpeedBoost();
+                    }
+
                     this.powerUp = null;
                     this.sounds.powerUp.play();
                     this.createParticles(this.runner.x, this.runner.y);
@@ -148,6 +158,14 @@
 
                 this.animationFrame = (this.animationFrame + 1) % 20;
                 this.dayNightCycle = (this.dayNightCycle + 0.0005) % 1;
+
+                // Update speed boost
+                if (this.speedBoostActive) {
+                    this.speedBoostTimer++;
+                    if (this.speedBoostTimer >= this.speedBoostDuration) {
+                        this.deactivateSpeedBoost();
+                    }
+                }
             }
 
             createParticles(x, y) {
@@ -352,8 +370,23 @@
             }
         
             generatePowerUp() {
-                const y = 150 + Math.random() * 150; 
-                this.powerUp = new PowerUp(this.canvas.width, y);
+                const powerUpTypes = ['business', 'speed'];
+                const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+                const y = 150 + Math.random() * 150;
+                this.powerUp = new PowerUp(this.canvas.width, y, type);
+            }
+
+            activateSpeedBoost() {
+                this.speedBoostActive = true;
+                this.speedBoostTimer = 0;
+                this.gameSpeed ++;
+                this.runner.activateSpeedBoost();
+            }
+
+            deactivateSpeedBoost() {
+                this.speedBoostActive = false;
+                this.gameSpeed --;
+                this.runner.deactivateSpeedBoost();
             }
         }
 
@@ -371,6 +404,7 @@
                 this.animationFrame = 0;
 
                 this.isBusinessMode = false;
+                this.isSpeedBoost = false;
             }
 
             draw(ctx) {
@@ -393,6 +427,10 @@
                 } else {
                     this.drawRunningMonkey(ctx);
                 }
+                
+                if (this.isSpeedBoost) {
+                    this.drawSpeedBoostEffect(ctx);
+                } 
 
                 ctx.restore();
             }
@@ -578,6 +616,33 @@
                 this.isBusinessMode = false;
             }
 
+            drawSpeedBoostEffect(ctx) {
+                ctx.save();
+                ctx.globalAlpha = 0.7;
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 2;
+                
+                // Draw lightning bolts behind the character
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(5 - i * 10, this.height / 2 + 20);
+                    ctx.lineTo(-5 - i * 10, this.height / 2 + 30);
+                    ctx.lineTo(- i * 10, this.height / 2 + 25);
+                    ctx.lineTo(-10 - i * 10, this.height / 2 + 40);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+
+            activateSpeedBoost() {
+                this.isSpeedBoost = true;
+            }
+
+            deactivateSpeedBoost() {
+                this.isSpeedBoost = false;
+            }
+
             update() {
                 if (this.isJumping) {
                     this.y += this.jumpVelocity;
@@ -613,17 +678,20 @@
                 this.isJumping = false;
                 this.isDucking = false;
                 this.jumpVelocity = 0;
+                this.deactivateBusinessMode();
+                this.deactivateSpeedBoost();
             }
         }
 
         class Obstacle {
-            constructor(x, y, width, height, color, type) {
+            constructor(x, y, width, height, color, type, speed = 0) {
                 this.x = x;
                 this.y = y;
                 this.width = width;
                 this.height = height;
                 this.color = color;
                 this.type = type;
+                this.speed = speed;
 
                 if (this.type === 'car') {
                     this.carColor = this.randomCarColor();
@@ -631,6 +699,16 @@
 
                 if (this.type === 'house') {
                     this.houseColor = this.randomHouseColor();
+                }
+
+                // if (this.type === 'drone') {
+                //     this.y += Math.sin(this.x * 0.02) * 2; // Make drones move in a wave pattern
+                //     this.x -= this.speed; // Additional horizontal movement for drones
+                // }
+
+                if (this.type === 'drone') {
+                    this.baseY = y;
+                    this.angle = 0;
                 }
             }
 
@@ -646,6 +724,10 @@
 
             update(gameSpeed) {
                 this.x -= gameSpeed;
+                if (this.type === 'drone') {
+                    this.angle += 0.05;
+                    this.y = this.baseY + Math.sin(this.angle) * 30;
+                }
             }
 
             draw(ctx) {
@@ -700,11 +782,12 @@
         }
 
         class PowerUp {
-            constructor(x, y) {
+            constructor(x, y, type) {
                 this.x = x;
                 this.y = y;
                 this.width = 30;
                 this.height = 30;
+                this.type = type;
             }
 
             update(gameSpeed) {
@@ -712,25 +795,52 @@
             }
 
             draw(ctx) {
-                ctx.fillStyle = '#FFD700';
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+                // Draw circular background
                 ctx.beginPath();
-                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
+                ctx.arc(0, 0, this.width / 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.type === 'business' ? '#FFD700' : '#FFFFFF';
                 ctx.fill();
 
-                ctx.fillStyle = '#000000';
-                ctx.font = '20px Arial';
-                ctx.fillText('$', this.x + 10, this.y + 22);
+                // Draw icon
+                if (this.type === 'business') {
+                    this.drawDollarSign(ctx);
+                } else {
+                    this.drawFlashLogo(ctx);
+                }
 
                 // Add a glow effect
-                const gradient = ctx.createRadialGradient(
-                    this.x + this.width / 2, this.y + this.height / 2, 0,
-                    this.x + this.width / 2, this.y + this.height / 2, this.width / 2
-                );
-                gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
-                gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.width / 2);
+                gradient.addColorStop(0, this.type === 'business' ? 'rgba(255, 215, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
-                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width, 0, Math.PI * 2);
+                ctx.arc(0, 0, this.width, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            drawDollarSign(ctx) {
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('$', 0, 0);
+            }
+
+            drawFlashLogo(ctx) {
+                ctx.fillStyle = '#FF0000';
+                ctx.beginPath();
+                ctx.moveTo(-8, -10);
+                ctx.lineTo(0, -2);
+                ctx.lineTo(-4, 2);
+                ctx.lineTo(8, 10);
+                ctx.lineTo(0, 2);
+                ctx.lineTo(4, -2);
+                ctx.closePath();
                 ctx.fill();
             }
         }
