@@ -470,7 +470,7 @@
                     this.drawBusinessFlash(ctx);
                 } else if (this.isSpeedBoost) {
                     this.drawFlash(ctx);
-                } else if (this.isBusinessMode) {
+                } else if (this.isBusinessMode || true) {
                     this.drawBusinessMonkey(ctx);
                 } else if (this.isDucking) {
                     this.drawDuckingMonkey(ctx);
@@ -483,140 +483,32 @@
                 ctx.restore();
             }
 
-            drawFlash(ctx) {
-                // Body
-                ctx.fillStyle = '#FF0000';
-                ctx.fillRect(10, 20, 30, 30);
-
-                // Head
-                ctx.fillStyle = '#FF0000';
-                ctx.fillRect(5, 0, 25, 20);
-
-                // Face
-                ctx.fillStyle = '#FFFF00';
-                ctx.fillRect(10, 5, 15, 15);
-
-                // Eyes
-                ctx.fillStyle = 'white';
-                ctx.fillRect(13, 8, 4, 4);
-                ctx.fillRect(23, 8, 4, 4);
-
-                // Lightning bolt emblem
-                ctx.fillStyle = '#FFFF00';
-                ctx.beginPath();
-                ctx.moveTo(20, 25);
-                ctx.lineTo(25, 35);
-                ctx.lineTo(20, 35);
-                ctx.lineTo(30, 50);
-                ctx.lineTo(25, 40);
-                ctx.lineTo(30, 40);
-                ctx.lineTo(20, 25);
-                ctx.fill();
-
-                // Legs
-                ctx.fillStyle = '#FF0000';
-                ctx.fillRect(15, 50, 5, 10);
-                ctx.fillRect(30, 50, 5, 10);
-
-                // Speed lines
-                ctx.strokeStyle = '#FFFF00';
-                ctx.lineWidth = 2;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
-                    ctx.lineTo(5 - i * 10, 40 + i * 10);
-                    ctx.stroke();
-                }
-            }
-
-            drawBusinessFlash(ctx) {
-                // Body (suit)
-                ctx.fillStyle = '#000080';
-                ctx.fillRect(10, 20, 30, 30);
-
-                // Head
-                ctx.fillStyle = '#FF0000';
-                ctx.fillRect(5, 0, 25, 20);
-
-                // Face
-                ctx.fillStyle = '#FFFF00';
-                ctx.fillRect(10, 5, 15, 15);
-
-                // Eyes
-                ctx.fillStyle = 'white';
-                ctx.fillRect(13, 8, 4, 4);
-                ctx.fillRect(23, 8, 4, 4);
-
-                // Tie
-                ctx.fillStyle = '#FF0000';
-                ctx.beginPath();
-                ctx.moveTo(25, 20);
-                ctx.lineTo(30, 30);
-                ctx.lineTo(25, 40);
-                ctx.lineTo(20, 30);
-                ctx.closePath();
-                ctx.fill();
-
-                // Lightning bolt emblem
-                ctx.fillStyle = '#FFFF00';
-                ctx.beginPath();
-                ctx.moveTo(20, 25);
-                ctx.lineTo(25, 35);
-                ctx.lineTo(20, 35);
-                ctx.lineTo(30, 50);
-                ctx.lineTo(25, 40);
-                ctx.lineTo(30, 40);
-                ctx.lineTo(20, 25);
-                ctx.fill();
-
-                // Legs
-                ctx.fillStyle = '#000080';
-                ctx.fillRect(15, 50, 5, 10);
-                ctx.fillRect(30, 50, 5, 10);
-
-                // Briefcase (glowing)
-                ctx.fillStyle = '#FFD700';
-                ctx.fillRect(35, 40, 20, 25);
-                ctx.fillStyle = '#FFFF00';
-                ctx.fillRect(38, 45, 5, 2);
-
-                // Speed lines
-                ctx.strokeStyle = '#FFFF00';
-                ctx.lineWidth = 2;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
-                    ctx.lineTo(5 - i * 10, 40 + i * 10);
-                    ctx.stroke();
-                }
-            }
-
             drawRunningMonkey(ctx) {
                 const legOffset = Math.sin(this.animationFrame * 0.5) * 5;
 
                 // Body
-                ctx.fillStyle = '#8B4513';
+                ctx.fillStyle = '#C68E17';
                 ctx.fillRect(10, 20, 30, 30);
 
                 // Head
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(5, 0, 25, 20);
+                ctx.fillStyle = '#C68E17';
+                ctx.fillRect(10, 0, 25, 20);
 
                 // Face
                 ctx.fillStyle = '#FFA07A';
-                ctx.fillRect(10, 5, 15, 15);
+                ctx.fillRect(15, 5, 15, 15);
 
                 // Eyes
                 ctx.fillStyle = 'black';
-                ctx.fillRect(13, 8, 4, 4);
-                ctx.fillRect(23, 8, 4, 4);
+                ctx.fillRect(18, 8, 4, 4);
+                ctx.fillRect(28, 8, 4, 4);
 
                 // Mouth
                 ctx.fillStyle = 'black';
-                ctx.fillRect(18, 15, 6, 2);
+                ctx.fillRect(23, 15, 6, 2);
 
                 // Arms
-                ctx.fillStyle = '#8B4513';
+                ctx.fillStyle = '#C68E17';
                 ctx.fillRect(5, 25, 5, 15 + legOffset);
                 ctx.fillRect(35, 25, 5, 15 - legOffset);
 
@@ -634,67 +526,67 @@
             drawJumpingMonkey(ctx) {
                 // Similar to running monkey, but with raised arms and legs tucked
                 // Body
-                ctx.fillStyle = '#8B4513';
+                ctx.fillStyle = '#C68E17';
                 ctx.fillRect(10, 20, 30, 30);
 
                 // Head
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(5, 0, 25, 20);
+                ctx.fillStyle = '#C68E17';
+                ctx.fillRect(10, 0, 25, 20);
 
                 // Face
                 ctx.fillStyle = '#FFA07A';
-                ctx.fillRect(10, 5, 15, 15);
+                ctx.fillRect(15, 5, 15, 15);
 
                 // Eyes
                 ctx.fillStyle = 'black';
-                ctx.fillRect(13, 8, 4, 4);
-                ctx.fillRect(23, 8, 4, 4);
+                ctx.fillRect(18, 8, 4, 4);
+                ctx.fillRect(28, 8, 4, 4);
 
                 // Mouth
                 ctx.fillStyle = 'black';
-                ctx.fillRect(18, 15, 6, 2);
+                ctx.fillRect(23, 15, 6, 2);
 
                 // Arms (raised)
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(5, 15, 5, 15);
-                ctx.fillRect(35, 15, 5, 15);
+                ctx.fillStyle = '#C68E17';
+                ctx.fillRect(5, 10, 5, 20);
+                ctx.fillRect(35, 10, 5, 20);
 
                 // Legs (tucked)
-                ctx.fillRect(15, 45, 5, 10);
-                ctx.fillRect(30, 45, 5, 10);
+                ctx.fillRect(15, 40, 5, 15);
+                ctx.fillRect(30, 40, 5, 15);
 
                 // Briefcase (held higher)
                 ctx.fillStyle = '#4A4A4A';
-                ctx.fillRect(35, 30, 15, 20);
+                ctx.fillRect(35, 25, 15, 20);
                 ctx.fillStyle = '#C0C0C0';
-                ctx.fillRect(38, 35, 5, 2);
+                ctx.fillRect(38, 30, 5, 2);
             }
 
             drawDuckingMonkey(ctx) {
                 // Squashed monkey
                 // Body
-                ctx.fillStyle = '#8B4513';
+                ctx.fillStyle = '#C68E17';
                 ctx.fillRect(10, 30, 30, 20);
 
                 // Head (lowered)
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(5, 20, 25, 15);
+                ctx.fillStyle = '#C68E17';
+                ctx.fillRect(10, 20, 25, 15);
 
                 // Face
                 ctx.fillStyle = '#FFA07A';
-                ctx.fillRect(10, 22, 15, 12);
+                ctx.fillRect(15, 22, 15, 12);
 
                 // Eyes
                 ctx.fillStyle = 'black';
-                ctx.fillRect(13, 25, 4, 3);
-                ctx.fillRect(23, 25, 4, 3);
+                ctx.fillRect(18, 25, 4, 3);
+                ctx.fillRect(28, 25, 4, 3);
 
                 // Mouth
                 ctx.fillStyle = 'black';
-                ctx.fillRect(18, 30, 6, 2);
+                ctx.fillRect(23, 30, 6, 2);
 
                 // Arms
-                ctx.fillStyle = '#8B4513';
+                ctx.fillStyle = '#C68E17';
                 ctx.fillRect(5, 35, 5, 10);
                 ctx.fillRect(35, 35, 5, 10);
 
@@ -710,26 +602,26 @@
             }
 
             drawBusinessMonkey(ctx) {
-                // Body
-                ctx.fillStyle = '#000080'; // Navy suit
+                // Body (navy suit)
+                ctx.fillStyle = '#000080';
                 ctx.fillRect(10, 20, 30, 30);
 
                 // Head
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(5, 0, 25, 20);
+                ctx.fillStyle = '#C68E17';
+                ctx.fillRect(10, 0, 25, 20);
 
                 // Face
                 ctx.fillStyle = '#FFA07A';
-                ctx.fillRect(10, 5, 15, 15);
+                ctx.fillRect(15, 5, 15, 15);
 
                 // Eyes
                 ctx.fillStyle = 'black';
-                ctx.fillRect(13, 8, 4, 4);
-                ctx.fillRect(23, 8, 4, 4);
+                ctx.fillRect(18, 8, 4, 4);
+                ctx.fillRect(28, 8, 4, 4);
 
                 // Mouth
                 ctx.fillStyle = 'black';
-                ctx.fillRect(18, 15, 6, 2);
+                ctx.fillRect(23, 15, 6, 2);
 
                 // Arms
                 ctx.fillStyle = '#000080';
@@ -750,10 +642,10 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Briefcase (larger and glowing)
-                ctx.fillStyle = '#FFD700';
-                ctx.fillRect(35, 40, 20, 25);
-                ctx.fillStyle = '#FFFF00';
+                // Briefcase
+                ctx.fillStyle = '#4A4A4A';
+                ctx.fillRect(35, 40, 15, 20);
+                ctx.fillStyle = '#C0C0C0';
                 ctx.fillRect(38, 45, 5, 2);
 
                 // Glow effect
@@ -762,6 +654,138 @@
                 gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
                 ctx.fillStyle = gradient;
                 ctx.fillRect(25, 30, 40, 45);
+            }
+
+            drawFlash(ctx) {
+                const legOffset = Math.sin(this.animationFrame * 0.5) * 5;
+
+                // Body (red like The Flash)
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(10, 20, 30, 30);
+
+                // Head (monkey-like but red)
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(10, 0, 25, 20);
+
+                // Face (lighter red)
+                ctx.fillStyle = '#FF6347';
+                ctx.fillRect(15, 5, 15, 15);
+
+                // Eyes (white with black pupils)
+                ctx.fillStyle = 'white';
+                ctx.fillRect(18, 8, 4, 4);
+                ctx.fillRect(28, 8, 4, 4);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(19, 9, 2, 2);
+                ctx.fillRect(29, 9, 2, 2);
+
+                // Mouth
+                ctx.fillStyle = 'black';
+                ctx.fillRect(23, 15, 6, 2);
+
+                // Flash emblem (yellow lightning bolt)
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(30, 25);
+                ctx.lineTo(25, 35);
+                ctx.lineTo(30, 35);
+                ctx.lineTo(20, 45);
+                ctx.lineTo(25, 40);
+                ctx.lineTo(20, 40);
+                ctx.lineTo(30, 25);
+                ctx.fill();
+
+                // Arms
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(5, 25, 5, 15 + legOffset);
+                ctx.fillRect(35, 25, 5, 15 - legOffset);
+
+                // Legs
+                ctx.fillRect(15, 50, 5, 10 + legOffset);
+                ctx.fillRect(30, 50, 5, 10 - legOffset);
+
+                // Speed lines
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
+                    ctx.lineTo(5 - i * 10, 40 + i * 10);
+                    ctx.stroke();
+                }
+            }
+
+            drawBusinessFlash(ctx) {
+                // Body (navy suit)
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(10, 20, 30, 30);
+
+                // Head (red like The Flash)
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(10, 0, 25, 20);
+
+                // Face (lighter red)
+                ctx.fillStyle = '#FF6347';
+                ctx.fillRect(15, 5, 15, 15);
+
+                // Eyes (white with black pupils)
+                ctx.fillStyle = 'white';
+                ctx.fillRect(18, 8, 4, 4);
+                ctx.fillRect(28, 8, 4, 4);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(19, 9, 2, 2);
+                ctx.fillRect(29, 9, 2, 2);
+
+                // Mouth
+                ctx.fillStyle = 'black';
+                ctx.fillRect(23, 15, 6, 2);
+
+                // Tie with Flash emblem
+                ctx.fillStyle = '#FF0000';
+                ctx.beginPath();
+                ctx.moveTo(25, 20);
+                ctx.lineTo(30, 30);
+                ctx.lineTo(25, 40);
+                ctx.lineTo(20, 30);
+                ctx.closePath();
+                ctx.fill();
+
+                // Flash emblem on tie (yellow lightning bolt)
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(28, 25);
+                ctx.lineTo(25, 30);
+                ctx.lineTo(28, 30);
+                ctx.lineTo(22, 35);
+                ctx.lineTo(25, 33);
+                ctx.lineTo(22, 33);
+                ctx.lineTo(28, 25);
+                ctx.fill();
+
+                // Arms
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(5, 25, 5, 15);
+                ctx.fillRect(35, 25, 5, 15);
+
+                // Legs
+                ctx.fillRect(15, 50, 5, 10);
+                ctx.fillRect(30, 50, 5, 10);
+
+                // Briefcase (glowing)
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(35, 40, 15, 20);
+                ctx.fillStyle = '#FFFF00';
+                ctx.fillRect(38, 45, 5, 2);
+
+                // Speed lines
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
+                    ctx.lineTo(5 - i * 10, 40 + i * 10);
+                    ctx.stroke();
+                }
             }
 
             activateBusinessMode() {
