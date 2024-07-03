@@ -924,6 +924,8 @@
             }
 
             drawDuckingFlash(ctx) {
+                const effectOffset = (this.animationFrame % 20) / 20; // Creates a cyclical effect
+
                 // Body (red)
                 ctx.fillStyle = '#FF0000';
                 ctx.fillRect(10, 30, 30, 20);
@@ -964,6 +966,23 @@
                 ctx.fillStyle = '#FFD700';
                 ctx.fillRect(15, 50, 5, 5);
                 ctx.fillRect(30, 50, 5, 5);
+
+                // Create multiple layers of speed lines
+                for (let layer = 0; layer < 3; layer++) {
+                    const layerOffset = (effectOffset + layer / 3) % 1; // Stagger the layers
+
+                    // Yellow speed lines
+                    ctx.strokeStyle = `rgba(255, 255, 0, ${0.7 - layer * 0.2})`; // Fade out for back layers
+                    ctx.lineWidth = 2 - layer * 0.5; // Thinner lines for back layers
+
+                    for (let i = 0; i < 5; i++) {
+                        const x = -10 + i * 10 - layerOffset * 20;
+                        ctx.beginPath();
+                        ctx.moveTo(x + 10, 17);
+                        ctx.lineTo(x + 30, 60);
+                        ctx.stroke();
+                    }
+                }
             }
 
             drawBusinessFlash(ctx) {
