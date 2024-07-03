@@ -466,18 +466,36 @@
                 ctx.fill();
 
                 // Body
-                if (this.isSpeedBoost && this.isBusinessMode) {
+                if (this.isBusinessMode && this.isSpeedBoost) {
                     this.drawBusinessFlash(ctx);
-                } else if (this.isSpeedBoost) {
-                    this.drawFlash(ctx);
-                } else if (this.isBusinessMode) {
-                    this.drawBusinessMonkey(ctx);
-                } else if (this.isDucking) {
-                    this.drawDuckingMonkey(ctx);
-                } else if (this.isJumping) {
-                    this.drawJumpingMonkey(ctx);
-                } else {
-                    this.drawRunningMonkey(ctx);
+                } 
+
+                else if (this.isBusinessMode) {
+                    if (this.isJumping)
+                        this.drawJumpingBusinessMonkey(ctx);
+                    else if (this.isDucking)
+                        this.drawDuckingBusinessMonkey(ctx);
+                    else
+                        this.drawBusinessMonkey(ctx);
+                } 
+                
+                else if (this.isSpeedBoost) {
+                    if (this.isJumping)
+                        this.drawJumpingFlash(ctx);
+                    else if (this.isDucking)
+                        this.drawDuckingFlash(ctx);
+                    else
+                        this.drawFlash(ctx);
+                } 
+                
+                
+                else {
+                    if (this.isJumping) 
+                        this.drawJumpingMonkey(ctx);
+                    else if (this.isDucking) 
+                        this.drawDuckingMonkey(ctx);
+                    else 
+                        this.drawRunningMonkey(ctx);
                 }
 
                 ctx.restore();
@@ -656,6 +674,106 @@
                 ctx.fillRect(25, 30, 40, 45);
             }
 
+            drawJumpingBusinessMonkey(ctx) {
+                // Body (navy suit)
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(10, 20, 30, 30);
+
+                // Head
+                ctx.fillStyle = '#C68E17';
+                ctx.fillRect(10, 0, 25, 20);
+
+                // Face
+                ctx.fillStyle = '#FFA07A';
+                ctx.fillRect(15, 5, 15, 15);
+
+                // Eyes
+                ctx.fillStyle = 'black';
+                ctx.fillRect(18, 8, 4, 4);
+                ctx.fillRect(28, 8, 4, 4);
+
+                // Mouth
+                ctx.fillStyle = 'black';
+                ctx.fillRect(23, 15, 6, 2);
+
+                // Arms (raised)
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(5, 10, 5, 20);
+                ctx.fillRect(35, 10, 5, 20);
+
+                // Legs (tucked)
+                ctx.fillRect(15, 40, 5, 15);
+                ctx.fillRect(30, 40, 5, 15);
+
+                // Tie
+                ctx.fillStyle = '#FF0000';
+                ctx.beginPath();
+                ctx.moveTo(25, 20);
+                ctx.lineTo(30, 30);
+                ctx.lineTo(25, 40);
+                ctx.lineTo(20, 30);
+                ctx.closePath();
+                ctx.fill();
+
+                // Briefcase (held higher)
+                ctx.fillStyle = '#4A4A4A';
+                ctx.fillRect(35, 25, 15, 20);
+                ctx.fillStyle = '#C0C0C0';
+                ctx.fillRect(38, 30, 5, 2);
+
+                // Glow effect
+                const gradient = ctx.createRadialGradient(45, 52.5, 0, 45, 52.5, 20);
+                gradient.addColorStop(0, 'rgba(255, 255, 0, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(25, 30, 40, 45);
+            }
+
+            drawDuckingBusinessMonkey(ctx) {
+                // Body (navy suit)
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(10, 30, 30, 20);
+
+                // Head (lowered)
+                ctx.fillStyle = '#C68E17';
+                ctx.fillRect(10, 20, 25, 15);
+
+                // Face
+                ctx.fillStyle = '#FFA07A';
+                ctx.fillRect(15, 22, 15, 12);
+
+                // Eyes
+                ctx.fillStyle = 'black';
+                ctx.fillRect(18, 25, 4, 3);
+                ctx.fillRect(28, 25, 4, 3);
+
+                // Mouth
+                ctx.fillStyle = 'black';
+                ctx.fillRect(23, 30, 6, 2);
+
+                // Arms
+                ctx.fillStyle = '#000080';
+                ctx.fillRect(5, 35, 5, 10);
+                ctx.fillRect(35, 35, 5, 10);
+
+                // Legs
+                ctx.fillRect(15, 50, 5, 5);
+                ctx.fillRect(30, 50, 5, 5);
+
+                // Briefcase (on the ground)
+                ctx.fillStyle = '#4A4A4A';
+                ctx.fillRect(40, 40, 15, 20);
+                ctx.fillStyle = '#C0C0C0';
+                ctx.fillRect(43, 45, 5, 2);
+
+                // Glow effect
+                const gradient = ctx.createRadialGradient(50, 52.5, 0, 50, 52.5, 20);
+                gradient.addColorStop(0, 'rgba(255, 255, 0, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(30, 30, 40, 45);
+            }
+
             drawFlash(ctx) {
                 const legOffset = Math.sin(this.animationFrame * 0.5) * 5;
                 const effectOffset = (this.animationFrame % 20) / 20; // Creates a cyclical effect
@@ -729,6 +847,123 @@
                         ctx.stroke();
                     }
                 }
+            }
+
+            drawJumpingFlash(ctx) {
+                const effectOffset = (this.animationFrame % 20) / 20; // Creates a cyclical effect
+
+                // Body
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(10, 20, 30, 30);
+
+                // Flash mask (yellow)
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(10, 0, 25, 6);  // Top of mask
+                ctx.fillRect(10, 0, 5, 20);  // Left side of mask
+                ctx.fillRect(30, 0, 5, 20);  // Right side of mask
+
+                // Face
+                ctx.fillStyle = '#FFA07A';
+                ctx.fillRect(15, 5, 15, 15);
+
+                // Eyes
+                ctx.fillStyle = 'white';
+                ctx.fillRect(18, 8, 4, 4);
+                ctx.fillRect(28, 8, 4, 4);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(19, 9, 2, 2);
+                ctx.fillRect(29, 9, 2, 2);
+
+                // Mouth
+                ctx.fillStyle = 'black';
+                ctx.fillRect(23, 15, 6, 2);
+
+                // Lightning bolt ear pieces
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(8, 8, 2, 4);
+                ctx.fillRect(35, 8, 2, 4);
+
+                // Arms (red) (raised)
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(5, 10, 5, 20);
+                ctx.fillRect(35, 10, 5, 20);
+
+                // Legs (yellow boots) (tucked)
+                ctx.fillStyle = '#FFD700 ';
+                ctx.fillRect(15, 40, 5, 15);
+                ctx.fillRect(30, 40, 5, 15);
+
+                // Lightning bolt emblem on chest
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(25, 25);
+                ctx.lineTo(20, 35);
+                ctx.lineTo(25, 35);
+                ctx.lineTo(20, 45);
+                ctx.lineTo(30, 32);
+                ctx.lineTo(25, 32);
+                ctx.closePath();
+                ctx.fill();
+
+                // Create multiple layers of speed lines
+                for (let layer = 0; layer < 3; layer++) {
+                    const layerOffset = (effectOffset + layer / 3) % 1; // Stagger the layers
+
+                    // Yellow speed lines
+                    ctx.strokeStyle = `rgba(255, 255, 0, ${0.7 - layer * 0.2})`; // Fade out for back layers
+                    ctx.lineWidth = 2 - layer * 0.5; // Thinner lines for back layers
+
+                    for (let i = 0; i < 5; i++) {
+                        const x = -10 + i * 10 - layerOffset * 20;
+                        ctx.beginPath();
+                        ctx.moveTo(x + 10, 0);
+                        ctx.lineTo(x + 30, 60);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            drawDuckingFlash(ctx) {
+                // Body (red)
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(10, 30, 30, 20);
+
+                // Flash mask (yellow)
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(10, 17, 25, 6);  // Top of mask
+                ctx.fillRect(10, 17, 5, 20);  // Left side of mask
+                ctx.fillRect(30, 17, 5, 20);  // Right side of mask
+
+                // Face
+                ctx.fillStyle = '#FFA07A';
+                ctx.fillRect(15, 22, 15, 15);
+
+                // Eyes
+                ctx.fillStyle = 'white';
+                ctx.fillRect(18, 25, 4, 3);
+                ctx.fillRect(28, 25, 4, 3);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(19, 26, 2, 1);
+                ctx.fillRect(29, 26, 2, 1);
+
+                // Mouth
+                ctx.fillStyle = 'black';
+                ctx.fillRect(23, 30, 6, 2);
+
+                // Lightning bolt ear pieces
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(8, 25, 2, 4);
+                ctx.fillRect(35, 25, 2, 4);
+
+                // Arms (red)
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(5, 35, 5, 10);
+                ctx.fillRect(35, 35, 5, 10);
+
+                // Legs (yellow boots)
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(15, 50, 5, 5);
+                ctx.fillRect(30, 50, 5, 5);
             }
 
             drawBusinessFlash(ctx) {
@@ -820,27 +1055,6 @@
 
             deactivateBusinessMode() {
                 this.isBusinessMode = false;
-            }
-
-            drawSpeedBoostEffect(ctx) {
-                // Instead of drawing lightning, we'll add a glowing outline to the character
-                ctx.save();
-                ctx.strokeStyle = '#FF0000';
-                ctx.lineWidth = 3;
-                ctx.shadowColor = '#FF0000';
-                ctx.shadowBlur = 10;
-                
-                // Outline the body
-                ctx.strokeRect(10, 20, 30, 30);
-                
-                // Outline the head
-                ctx.strokeRect(5, 0, 25, 20);
-                
-                // Outline the legs
-                ctx.strokeRect(15, 50, 5, 10);
-                ctx.strokeRect(30, 50, 5, 10);
-                
-                ctx.restore();
             }
 
             activateSpeedBoost() {
