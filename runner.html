@@ -658,17 +658,20 @@
 
             drawFlash(ctx) {
                 const legOffset = Math.sin(this.animationFrame * 0.5) * 5;
+                const effectOffset = (this.animationFrame % 20) / 20; // Creates a cyclical effect
 
                 // Body (red like The Flash)
                 ctx.fillStyle = '#FF0000';
                 ctx.fillRect(10, 20, 30, 30);
+                
+                // Flash mask (yellow)
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(10, 0, 25, 6);  // Top of mask
+                ctx.fillRect(10, 0, 5, 20);  // Left side of mask
+                ctx.fillRect(30, 0, 5, 20);  // Right side of mask
 
-                // Head (monkey-like but red)
-                ctx.fillStyle = '#FF0000';
-                ctx.fillRect(10, 0, 25, 20);
-
-                // Face (lighter red)
-                ctx.fillStyle = '#FF6347';
+                // Face
+                ctx.fillStyle = '#FFA07A';
                 ctx.fillRect(15, 5, 15, 15);
 
                 // Eyes (white with black pupils)
@@ -683,39 +686,55 @@
                 ctx.fillStyle = 'black';
                 ctx.fillRect(23, 15, 6, 2);
 
-                // Flash emblem (yellow lightning bolt)
+                // Lightning bolt ear pieces
                 ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.moveTo(30, 25);
-                ctx.lineTo(25, 35);
-                ctx.lineTo(30, 35);
-                ctx.lineTo(20, 45);
-                ctx.lineTo(25, 40);
-                ctx.lineTo(20, 40);
-                ctx.lineTo(30, 25);
-                ctx.fill();
+                ctx.fillRect(8, 8, 2, 4);
+                ctx.fillRect(35, 8, 2, 4);
 
-                // Arms
+                // Arms (red)
                 ctx.fillStyle = '#FF0000';
                 ctx.fillRect(5, 25, 5, 15 + legOffset);
                 ctx.fillRect(35, 25, 5, 15 - legOffset);
 
-                // Legs
+                // Legs (yellow boots)
+                ctx.fillStyle = '#FFD700';
                 ctx.fillRect(15, 50, 5, 10 + legOffset);
                 ctx.fillRect(30, 50, 5, 10 - legOffset);
 
-                // Speed lines
-                ctx.strokeStyle = '#FFD700';
-                ctx.lineWidth = 2;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
-                    ctx.lineTo(5 - i * 10, 40 + i * 10);
-                    ctx.stroke();
+                // Lightning bolt emblem on chest
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(25, 25);
+                ctx.lineTo(20, 35);
+                ctx.lineTo(25, 35);
+                ctx.lineTo(20, 45);
+                ctx.lineTo(30, 32);
+                ctx.lineTo(25, 32);
+                ctx.closePath();
+                ctx.fill();
+
+                // Create multiple layers of speed lines
+                for (let layer = 0; layer < 3; layer++) {
+                    const layerOffset = (effectOffset + layer / 3) % 1; // Stagger the layers
+
+                    // Yellow speed lines
+                    ctx.strokeStyle = `rgba(255, 255, 0, ${0.7 - layer * 0.2})`; // Fade out for back layers
+                    ctx.lineWidth = 2 - layer * 0.5; // Thinner lines for back layers
+
+                    for (let i = 0; i < 5; i++) {
+                        const x = -10 + i * 10 - layerOffset * 20;
+                        ctx.beginPath();
+                        ctx.moveTo(x + 10, 0);
+                        ctx.lineTo(x + 30, 60);
+                        ctx.stroke();
+                    }
                 }
             }
 
             drawBusinessFlash(ctx) {
+                const legOffset = Math.sin(this.animationFrame * 0.5) * 5;
+                const effectOffset = (this.animationFrame % 20) / 20; // Creates a cyclical effect
+
                 // Body (navy suit)
                 ctx.fillStyle = '#000080';
                 ctx.fillRect(10, 20, 30, 30);
@@ -750,18 +769,6 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Flash emblem on tie (yellow lightning bolt)
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.moveTo(28, 25);
-                ctx.lineTo(25, 30);
-                ctx.lineTo(28, 30);
-                ctx.lineTo(22, 35);
-                ctx.lineTo(25, 33);
-                ctx.lineTo(22, 33);
-                ctx.lineTo(28, 25);
-                ctx.fill();
-
                 // Arms
                 ctx.fillStyle = '#000080';
                 ctx.fillRect(5, 25, 5, 15);
@@ -777,14 +784,33 @@
                 ctx.fillStyle = '#FFFF00';
                 ctx.fillRect(38, 45, 5, 2);
 
-                // Speed lines
-                ctx.strokeStyle = '#FFD700';
-                ctx.lineWidth = 2;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(-10 - i * 10, 20 + i * 10);
-                    ctx.lineTo(5 - i * 10, 40 + i * 10);
-                    ctx.stroke();
+                // Lightning bolt emblem on chest
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(25, 25);
+                ctx.lineTo(20, 35);
+                ctx.lineTo(25, 35);
+                ctx.lineTo(20, 45);
+                ctx.lineTo(30, 32);
+                ctx.lineTo(25, 32);
+                ctx.closePath();
+                ctx.fill();
+
+                // Create multiple layers of speed lines
+                for (let layer = 0; layer < 3; layer++) {
+                    const layerOffset = (effectOffset + layer / 3) % 1; // Stagger the layers
+
+                    // Orange speed lines
+                    ctx.strokeStyle = `rgba(255, 165, 0, ${0.6 - layer * 0.2})`;
+                    ctx.lineWidth = 1.5 - layer * 0.3;
+
+                    for (let i = 0; i < 4; i++) {
+                        const x = -5 + i * 12 - layerOffset * 24;
+                        ctx.beginPath();
+                        ctx.moveTo(x + 12, 10);
+                        ctx.lineTo(x + 36, 50);
+                        ctx.stroke();
+                    }
                 }
             }
 
