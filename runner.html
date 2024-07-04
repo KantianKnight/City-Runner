@@ -116,7 +116,7 @@
                 }
 
                 // Update power-up
-                if (!this.powerUp && Math.random() < 1) { // 0.002
+                if (!this.powerUp && Math.random() < 0.002) {
                     this.generatePowerUp();
                 }
                 if (this.powerUp) {
@@ -381,7 +381,7 @@
                 return this.obstacles.some(obstacle => {
                     const runnerHitbox = {
                         x: this.runner.x + 5,
-                        y: this.runner.y + (this.runner.isDucking ? 40 : 0),
+                        y: this.runner.y + (this.runner.isDucking ? this.runner.height - this.runner.duckHeight : 0),
                         width: this.runner.width - 10,
                         height: this.runner.isDucking ? this.runner.duckHeight : this.runner.height
                     };
@@ -439,7 +439,7 @@
                 this.lowest = y;
                 this.width = 40;
                 this.height = 60;
-                this.duckHeight = 30;
+                this.duckHeight = 40;
                 this.isJumping = false;
                 this.isDucking = false;
                 this.jumpVelocity = 0;
