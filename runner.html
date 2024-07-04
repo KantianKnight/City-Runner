@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <canvas id="gameCanvas" width="1200" height="600"></canvas>
     <script>
         // Game state management
         const GameState = {
@@ -40,14 +40,14 @@
                 this.obstacleTimer = 0;
                 this.animationFrame = 0;
                 this.dayNightCycle = 0;
-                this.runner = new Runner(50, 300);
+                this.runner = new Runner(50, this.canvas.height - 100);
                 this.sky = new Sky(canvas);
                 this.obstacles = [];
                 this.buildings = [];
                 this.initBuildings();
                 this.powerUpActive = false;
                 this.powerUpTimer = 0;
-                this.ground = { y: 350, height: 50, color: '#535353' };
+                this.ground = { y: this.canvas.height - 50, height: 50, color: '#535353' };
 
                 this.powerUp = null;
                 this.businessModeActive = false;
@@ -116,7 +116,7 @@
                 }
 
                 // Update power-up
-                if (!this.powerUp && Math.random() < 0.002) {
+                if (!this.powerUp && Math.random() < 1) { // 0.002
                     this.generatePowerUp();
                 }
                 if (this.powerUp) {
@@ -197,10 +197,6 @@
                 } else if (this.state === GameState.PAUSED) {
                     this.drawPausedScreen();
                 }
-            }
-
-            generatePowerUp() {
-                this.powerUp = new PowerUp(this.canvas.width, 300);
             }
 
             activateBusinessMode() {
@@ -368,11 +364,6 @@
                 this.deactivateSpeedBoost();
             }
 
-            restart() {
-                this.buildings = [];
-                this.initBuildings();
-            }
-
             checkPowerUpCollision() {
                 if (!this.powerUp) return false;
 
@@ -420,20 +411,23 @@
             generatePowerUp() {
                 const powerUpTypes = ['business', 'speed'];
                 const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-                const y = 150 + Math.random() * 150;
+                const y = this.canvas.height - 100 - Math.random() * 150;
                 this.powerUp = new PowerUp(this.canvas.width, y, type);
             }
 
             activateSpeedBoost() {
-                this.speedBoostActive = true;
+                if (!this.speedBoostActive) {
+                    this.speedBoostActive = true;
+                    this.gameSpeed++;
+                }
+
                 this.speedBoostTimer = 0;
-                this.gameSpeed ++;
                 this.runner.activateSpeedBoost();
             }
 
             deactivateSpeedBoost() {
                 this.speedBoostActive = false;
-                this.gameSpeed --;
+                this.gameSpeed--;
                 this.runner.deactivateSpeedBoost();
             }
         }
@@ -442,6 +436,7 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
+                this.lowest = y;
                 this.width = 40;
                 this.height = 60;
                 this.duckHeight = 30;
@@ -1089,8 +1084,8 @@
                     this.y += this.jumpVelocity;
                     this.jumpVelocity += this.gravity;
 
-                    if (this.y >= 300) {
-                        this.y = 300;
+                    if (this.y >= this.lowest) {
+                        this.y = this.lowest;
                         this.isJumping = false;
                         this.jumpVelocity = 0;
                     }
@@ -1116,7 +1111,7 @@
             }
 
             reset() {
-                this.y = 300;
+                this.y = this.lowest;
                 this.isJumping = false;
                 this.isDucking = false;
                 this.jumpVelocity = 0;
@@ -1726,8 +1721,10 @@
                 if (game.state === GameState.START || game.state === GameState.GAME_OVER) {
                     game.startGame();
                 } else if (game.state === GameState.PLAYING) {
-                    game.runner.jump();
-                    game.sounds.jump.play();
+                    if (!game.runner.isJumping) {
+                        game.runner.jump();
+                        game.sounds.jump.play();
+                    }
                 }
             } else if (event.code === 'ArrowDown') {
                 game.runner.duck();
