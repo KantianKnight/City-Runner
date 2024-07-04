@@ -235,7 +235,7 @@
             generateObstacle() {
                 const obstacleTypes = [
                     { width: 30, height: 50, y: this.ground.y - 50, color: '#FF0000', type: 'hydrant' },
-                    { width: 60, height: 70, y: this.ground.y - 70, color: '#000000', type: 'house' },
+                    { width: 75, height: 70, y: this.ground.y - 70, color: '#000000', type: 'house' },
                     { width: 50, height: 30, y: this.ground.y - 30, color: '#000000', type: 'car' },
                     { width: 40, height: 20, y: this.ground.y - Math.random() * 100 - 40, color: '#303030', type: 'drone' },
                     { width: 60, height: 15, y: this.ground.y, color: '#000000', type: 'hole' }
@@ -1169,14 +1169,52 @@
 
             draw(ctx) {
                 if (this.type === 'hydrant') {
-                    ctx.fillStyle = '#FF0000';
-                    ctx.fillRect(this.x + 10, this.y, 10, this.height);
-                    ctx.fillRect(this.x, this.y + 10, 30, 10);
-                    ctx.fillStyle = '#C0C0C0';
-                    ctx.beginPath();
-                    ctx.arc(this.x + 15, this.y, 7, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (this.type === 'car') {
+                    const scale = 2.5;  // Reduced from 3 to 2.5 to make it slightly smaller
+                    
+                    // Base
+                    ctx.fillStyle = '#FF4500';  // Bright orange-red
+                    ctx.fillRect(this.x, this.y + 20 * scale, 16 * scale, 4 * scale);
+                    
+                    // Main body
+                    ctx.fillRect(this.x + 2 * scale, this.y + 4 * scale, 12 * scale, 16 * scale);
+                    
+                    // Top dome (triangular shape)
+                    for (let i = 0; i < 4 * scale; i++) {
+                        ctx.fillRect(this.x + 2 * scale + i, this.y + i, 12 * scale - 2*i, 1);
+                    }
+                    
+                    // Side nozzles
+                    ctx.fillRect(this.x - 1 * scale, this.y + 8 * scale, 2 * scale, 4 * scale);
+                    ctx.fillRect(this.x + 15 * scale, this.y + 8 * scale, 2 * scale, 4 * scale);
+                    
+                    // Darker shade for depth
+                    ctx.fillStyle = '#E63900';  // Darker orange-red
+                    ctx.fillRect(this.x + 4 * scale, this.y + 8 * scale, 3 * scale, 12 * scale);
+                    ctx.fillRect(this.x + 9 * scale, this.y + 8 * scale, 3 * scale, 12 * scale);
+                }
+                // else if (this.type === 'car') {
+                //     // Main body
+                //     ctx.fillStyle = '#FF0000';  // Red
+                //     ctx.fillRect(this.x, this.y + 10, this.width, this.height - 20);
+                    
+                //     // Roof
+                //     ctx.fillRect(this.x + 10, this.y, this.width - 20, 15);
+                    
+                //     // Window
+                //     ctx.fillStyle = '#87CEEB';  // Light blue for window
+                //     ctx.fillRect(this.x + 20, this.y + 5, this.width - 40, 10);
+                    
+                //     // Wheels
+                //     ctx.fillStyle = '#333333';  // Dark grey for wheels
+                //     ctx.fillRect(this.x + 10, this.y + this.height - 15, 20, 15);
+                //     ctx.fillRect(this.x + this.width - 30, this.y + this.height - 15, 20, 15);
+                    
+                //     // Headlight
+                //     ctx.fillStyle = '#FFFF00';  // Yellow for headlight
+                //     ctx.fillRect(this.x + this.width - 5, this.y + 15, 5, 10);
+                // }
+
+                else if (this.type === 'car') {
                     ctx.fillStyle = this.carColor;
                     ctx.fillRect(this.x, this.y, this.width, this.height);
                     ctx.fillStyle = '#000000';
@@ -1184,18 +1222,56 @@
                     ctx.fillRect(this.x + this.width - 20, this.y + 20, 15, 15);
                     ctx.fillStyle = '#FFFFFF';
                     ctx.fillRect(this.x + 5, this.y + 5, 15, 10);
-                } else if (this.type === 'house') {
+                }
+
+                else if (this.type === 'house') {
+                    let groundY = this.y + this.height;
+                    let newHeight = this.height - 10;  // Increased height by 10 pixels
+                    
+                    // Main house body
                     ctx.fillStyle = this.houseColor;
-                    ctx.fillRect(this.x, this.y, this.width, this.height);
-                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(this.x, groundY - newHeight, this.width, newHeight);
+                    
+                    // Windows
+                    ctx.fillStyle = '#87CEEB';  // Light blue for windows
                     for (let i = 0; i < 3; i++) {
                         for (let j = 0; j < 2; j++) {
-                            ctx.fillRect(this.x + 10 + i * 20, this.y + 10 + j * 20, 10, 10);
+                            ctx.fillRect(this.x + 10 + i * 20, groundY - newHeight + 15 + j * 25, 10, 10);
                         }
                     }
-                    ctx.fillStyle = '#8B4513';
-                    ctx.fillRect(this.x + 25, this.y + 40, 10, 30);
-                } else if (this.type === 'drone') {
+                    
+                    // Door
+                    ctx.fillStyle = '#8B4513';  // Brown for door
+                    ctx.fillRect(this.x + 50, groundY - 30, 15, 30);
+                    
+                    // Doorknob
+                    ctx.fillStyle = '#FFD700';  // Gold for doorknob
+                    ctx.fillRect(this.x + 60, groundY - 18, 2, 2);
+                    
+                    // Roof
+                    ctx.fillStyle = '#8B0000';  // Dark red for roof
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, groundY - newHeight);
+                    ctx.lineTo(this.x + this.width / 2, groundY - newHeight - 20);
+                    ctx.lineTo(this.x + this.width, groundY - newHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                
+                // else if (this.type === 'house') {
+                //     ctx.fillStyle = this.houseColor;
+                //     ctx.fillRect(this.x, this.y, this.width, this.height);
+                //     ctx.fillStyle = '#FFFFFF';
+                //     for (let i = 0; i < 3; i++) {
+                //         for (let j = 0; j < 2; j++) {
+                //             ctx.fillRect(this.x + 10 + i * 20, this.y + 10 + j * 20, 10, 10);
+                //         }
+                //     }
+                //     ctx.fillStyle = '#8B4513';
+                //     ctx.fillRect(this.x + 25, this.y + 40, 10, 30);
+                // } 
+                
+                else if (this.type === 'drone') {
                     ctx.fillStyle = '#303030';
                     ctx.fillRect(this.x, this.y + 5, this.width, 10);
                     ctx.fillStyle = '#FF0000';
@@ -1209,7 +1285,9 @@
                     ctx.fillRect(this.x + this.width - 15, this.y, 5, 5);
                     ctx.fillRect(this.x + 10, this.y + 15, 5, 5);
                     ctx.fillRect(this.x + this.width - 15, this.y + 15, 5, 5);
-                } else if (this.type === 'hole') {
+                } 
+                
+                else if (this.type === 'hole') {
                     ctx.fillStyle = '#000000';
                     ctx.beginPath();
                     ctx.ellipse(this.x + this.width / 2, this.y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
