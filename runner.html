@@ -37,7 +37,6 @@
                 this.state = GameState.START;
                 this.score = 0;
                 this.highScore = this.getHighScore();
-                this.gameSpeed = 6;
                 this.obstacleTimer = 0;
                 this.animationFrame = 0;
                 this.dayNightCycle = 0;
@@ -105,8 +104,8 @@
                 }
 
                 this.obstacleTimer++;
-                if (!this.obstacleGap)
-                    this.obstacleGap = Math.random() * 40 + 20;
+                if (!this.obstacleGap) // Math.random() * 40
+                    this.obstacleGap = Math.random() * 30 + 12 + 2 * this.gameSpeed;
 
                 if (this.obstacleTimer > this.obstacleGap) {
                     this.obstacleTimer = 0;
@@ -366,6 +365,7 @@
                     this.setHighScore(this.highScore);
                 }
                 this.sounds.gameOver.play();
+                this.deactivateSpeedBoost();
             }
 
             restart() {
@@ -1104,6 +1104,7 @@
                     this.isJumping = true;
                     this.jumpVelocity = -15.5;
                 }
+                this.isDucking = false;
             }
 
             duck() {
