@@ -116,7 +116,7 @@
                 }
 
                 // Update power-up
-                if (!this.powerUp && Math.random() < 0.002) {
+                if (!this.powerUp && Math.random() < 1) { // 0.002
                     this.generatePowerUp();
                 }
                 if (this.powerUp) {
@@ -409,7 +409,7 @@
             }
         
             generatePowerUp() {
-                const powerUpTypes = ['business', 'speed'];
+                const powerUpTypes = ['business', 'speed', 'jump'];
                 const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
                 const y = this.canvas.height - 100 - Math.random() * 150;
                 this.powerUp = new PowerUp(this.canvas.width, y, type);
@@ -1188,27 +1188,6 @@
                     ctx.fillRect(this.x + 4 * scale, this.y + 8 * scale, 3 * scale, 12 * scale);
                     ctx.fillRect(this.x + 9 * scale, this.y + 8 * scale, 3 * scale, 12 * scale);
                 }
-                // else if (this.type === 'car') {
-                //     // Main body
-                //     ctx.fillStyle = '#FF0000';  // Red
-                //     ctx.fillRect(this.x, this.y + 10, this.width, this.height - 20);
-                    
-                //     // Roof
-                //     ctx.fillRect(this.x + 10, this.y, this.width - 20, 15);
-                    
-                //     // Window
-                //     ctx.fillStyle = '#87CEEB';  // Light blue for window
-                //     ctx.fillRect(this.x + 20, this.y + 5, this.width - 40, 10);
-                    
-                //     // Wheels
-                //     ctx.fillStyle = '#333333';  // Dark grey for wheels
-                //     ctx.fillRect(this.x + 10, this.y + this.height - 15, 20, 15);
-                //     ctx.fillRect(this.x + this.width - 30, this.y + this.height - 15, 20, 15);
-                    
-                //     // Headlight
-                //     ctx.fillStyle = '#FFFF00';  // Yellow for headlight
-                //     ctx.fillRect(this.x + this.width - 5, this.y + 15, 5, 10);
-                // }
 
                 else if (this.type === 'car') {
                     ctx.fillStyle = this.carColor;
@@ -1284,44 +1263,44 @@
                 } 
                 
                 else if (this.type === 'hole') {
-    // Open hole
-    ctx.fillStyle = '#000000';
-    ctx.beginPath();
-    ctx.ellipse(this.x + this.width / 2, this.y + this.height / 2, this.width / 2 - 5, this.height / 2 - 5, 0, 0, Math.PI * 2);
-    ctx.fill();
+                    // Open hole
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + this.width / 2, this.y + this.height / 2, this.width / 2 - 5, this.height / 2 - 5, 0, 0, Math.PI * 2);
+                    ctx.fill();
 
-    // Displaced cover
-    ctx.fillStyle = '#555555';
-    ctx.beginPath();
-    ctx.ellipse(this.x + this.width / 2 + 20, this.y + this.height / 2 - 15, this.width / 2, this.height / 2, Math.PI / 6, 0, Math.PI * 2);
-    ctx.fill();
+                    // Displaced cover
+                    ctx.fillStyle = '#555555';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + this.width / 2 + 20, this.y + this.height / 2 - 15, this.width / 2, this.height / 2, Math.PI / 6, 0, Math.PI * 2);
+                    ctx.fill();
 
-    // Inner circle on displaced cover
-    ctx.fillStyle = '#333333';
-    ctx.beginPath();
-    ctx.ellipse(this.x + this.width / 2 + 20, this.y + this.height / 2 - 15, this.width / 2 - 5, this.height / 2 - 5, Math.PI / 6, 0, Math.PI * 2);
-    ctx.fill();
+                    // Inner circle on displaced cover
+                    ctx.fillStyle = '#333333';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + this.width / 2 + 20, this.y + this.height / 2 - 15, this.width / 2 - 5, this.height / 2 - 5, Math.PI / 6, 0, Math.PI * 2);
+                    ctx.fill();
 
-    // Cross pattern on displaced cover
-    ctx.save();
-    ctx.translate(this.x + this.width / 2 + 20, this.y + this.height / 2 - 15);
-    ctx.rotate(Math.PI / 6);
-    ctx.strokeStyle = '#777777';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(-this.width / 2, 0);
-    ctx.lineTo(this.width / 2, 0);
-    ctx.moveTo(0, -this.height / 2);
-    ctx.lineTo(0, this.height / 2);
-    ctx.stroke();
-    ctx.restore();
+                    // Cross pattern on displaced cover
+                    ctx.save();
+                    ctx.translate(this.x + this.width / 2 + 20, this.y + this.height / 2 - 15);
+                    ctx.rotate(Math.PI / 6);
+                    ctx.strokeStyle = '#777777';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-this.width / 2, 0);
+                    ctx.lineTo(this.width / 2, 0);
+                    ctx.moveTo(0, -this.height / 2);
+                    ctx.lineTo(0, this.height / 2);
+                    ctx.stroke();
+                    ctx.restore();
 
-    // Shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-    ctx.beginPath();
-    ctx.ellipse(this.x + this.width / 2 + 5, this.y + this.height / 2 + 5, this.width / 2, this.height / 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-}
+                    // Shadow
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + this.width / 2 + 5, this.y + this.height / 2 + 5, this.width / 2, this.height / 4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         }
 
@@ -1342,33 +1321,35 @@
                 ctx.save();
                 ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
 
-                // Draw circular background
+                // Draw glow effect
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.width / 2);
+                if (this.type === 'business') {
+                    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+                } else if (this.type === 'speed') {
+                    gradient.addColorStop(0, 'rgba(255, 165, 0, 0.8)');
+                } else if (this.type === 'jump') {
+                    gradient.addColorStop(0, 'rgba(0, 255, 0, 0.8)');
+                }
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(0, 0, this.width / 2, 0, Math.PI * 2);
-                ctx.fillStyle = this.type === 'business' ? '#FFD700' : '#FFFFFF';
                 ctx.fill();
 
                 // Draw icon
                 if (this.type === 'business') {
                     this.drawDollarSign(ctx);
-                } else {
+                } else if (this.type === 'speed') {
                     this.drawFlashLogo(ctx);
+                } else if (this.type === 'jump') {
+                    this.drawJumpBoost(ctx);
                 }
-
-                // Add a glow effect
-                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.width / 2);
-                gradient.addColorStop(0, this.type === 'business' ? 'rgba(255, 215, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)');
-                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(0, 0, this.width, 0, Math.PI * 2);
-                ctx.fill();
 
                 ctx.restore();
             }
 
             drawDollarSign(ctx) {
-                ctx.fillStyle = '#000000';
+                ctx.fillStyle = '#85bb65';
                 ctx.font = 'bold 20px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -1376,16 +1357,40 @@
             }
 
             drawFlashLogo(ctx) {
-                ctx.fillStyle = '#FF0000';
+                ctx.fillStyle = '#FFD700';
                 ctx.beginPath();
-                ctx.moveTo(-8, -10);
-                ctx.lineTo(0, -2);
-                ctx.lineTo(-4, 2);
-                ctx.lineTo(8, 10);
-                ctx.lineTo(0, 2);
-                ctx.lineTo(4, -2);
+                ctx.moveTo(0, -10);
+                ctx.lineTo(-6, 0);
+                ctx.lineTo(-3, 0);
+                ctx.lineTo(-9, 10);
+                ctx.lineTo(6, 0);
+                ctx.lineTo(3, 0);
+                ctx.lineTo(9, -10);
                 ctx.closePath();
                 ctx.fill();
+            }
+
+            drawJumpBoost(ctx) {
+                // Arrow
+                ctx.fillStyle = '#4CAF50';
+                ctx.beginPath();
+                ctx.moveTo(0, -9);
+                ctx.lineTo(-6, 0);
+                ctx.lineTo(-3, 0);
+                ctx.lineTo(-3, 9);
+                ctx.lineTo(3, 9);
+                ctx.lineTo(3, 0);
+                ctx.lineTo(6, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                // Curved line under arrow
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-9, 9);
+                ctx.quadraticCurveTo(0, 0, 9, 9);
+                ctx.stroke();
             }
         }
 
