@@ -127,7 +127,7 @@
                 }
 
                 // Update power-up
-                if (!this.powerUp && Math.random() < 0.002) { // 0.002
+                if (!this.powerUp && Math.random() < 1) { // 0.002
                     this.generatePowerUp();
                 }
                 if (this.powerUp) {
@@ -521,6 +521,9 @@
                     else 
                         this.drawRunningMonkey(ctx);
                 }
+
+                if (this.isJumpBoost)
+                    this.drawJumpParticles(ctx);
 
                 ctx.restore();
             }
@@ -1089,6 +1092,65 @@
                         ctx.lineTo(x + 36, 50);
                         ctx.stroke();
                     }
+                }
+            }
+
+            drawJumpParticles(ctx) {
+                // Number of particles
+                const particleCount = 40;
+                
+                // Particle properties
+                const particleSize = 2;
+                const particleSpeed = 2;
+                const particleLifespan = 40;
+                
+                // Calculate the base position (center of the character)
+                const baseX = 25; // Center of the character
+                const baseY = 30; // Middle of the character
+                
+                // Draw particles
+                for (let i = 0; i < particleCount; i++) {
+                    // Calculate particle position
+                    const angle = (Math.PI * 2 / particleCount) * i + (this.animationFrame * 0.1);
+                    const radius = 20 + Math.sin(this.animationFrame * 0.1 + i) * 5;
+                    const x = baseX + Math.cos(angle) * radius;
+                    const y = baseY + Math.sin(angle) * radius;
+                    
+                    // Calculate opacity based on particle lifespan
+                    const opacity = 0.7 - (i % particleLifespan) / particleLifespan;
+                    
+                    // Draw main circling particle
+                    ctx.fillStyle = `rgba(0, 255, 0, ${opacity})`; // Green particles
+                    ctx.beginPath();
+                    ctx.arc(x, y, particleSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw trailing particle
+                    const trailOpacity = opacity * 0.5;
+                    const trailAngle = angle - 0.2;
+                    const trailX = baseX + Math.cos(trailAngle) * radius;
+                    const trailY = baseY + Math.sin(trailAngle) * radius;
+                    ctx.fillStyle = `rgba(144, 238, 144, ${trailOpacity})`; // Light green trail
+                    ctx.beginPath();
+                    ctx.arc(trailX, trailY, particleSize * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw particles at the circumference
+                const circumferenceParticles = 12;
+                for (let i = 0; i < circumferenceParticles; i++) {
+                    const angle = (Math.PI * 2 / circumferenceParticles) * i;
+                    const radius = 25 + Math.sin(this.animationFrame * 0.2 + i) * 2;
+                    const x = baseX + Math.cos(angle) * radius;
+                    const y = baseY + Math.sin(angle) * radius;
+                    
+                    const size = 1.5 + Math.sin(this.animationFrame * 0.3 + i) * 0.5;
+                    const opacity = 0.6 + Math.sin(this.animationFrame * 0.2 + i * 0.5) * 0.4;
+                    
+                    ctx.fillStyle = `rgba(50, 205, 50, ${opacity})`; // Lime green
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             }
 
