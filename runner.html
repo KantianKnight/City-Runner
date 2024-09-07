@@ -236,7 +236,7 @@
             generateObstacle() {
                 const obstacleTypes = [
                     { width: 30, height: 50, y: this.ground.y - 50, color: '#FF0000', type: 'hydrant' },
-                    { width: 75, height: 70, y: this.ground.y - 70, color: '#000000', type: 'house' },
+                    { width: 65, height: 70, y: this.ground.y - 70, color: '#000000', type: 'house' },
                     { width: 80, height: 40, y: this.ground.y - 30, color: '#000000', type: 'car' },
                     { width: 40, height: 20, y: this.ground.y - Math.random() * 100 - 40, color: '#303030', type: 'drone' },
                     { width: 60, height: 15, y: this.ground.y, color: '#000000', type: 'hole' }
@@ -346,7 +346,7 @@
             startGame() {
                 this.state = GameState.PLAYING;
                 this.score = 0;
-                this.gameSpeed = 6;
+                this.gameSpeed = 6.5;
                 this.obstacles = [];
                 this.runner.reset();
                 this.obstacleTimer = 0;
@@ -1984,7 +1984,7 @@
         gameLoop();
 
         document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') {
+            if (event.code === 'Space' || event.code === 'ArrowUp') {
                 if (game.state === GameState.START || game.state === GameState.GAME_OVER) {
                     game.startGame();
                 } else if (game.state === GameState.PLAYING) {
