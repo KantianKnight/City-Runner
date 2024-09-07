@@ -75,7 +75,7 @@
                 // Jump Boost
                 this.jumpBoostActive = false;
                 this.jumpBoostTimer = 0;
-                this.jumpBoostDuration = 420; // 7 seconds at 60 fps
+                this.jumpBoostDuration = 360; // 6 seconds at 60 fps
             }
 
             getHighScore() {
@@ -104,7 +104,7 @@
                 this.sky.update(this.gameSpeed);
                 
                 this.score++; 
-                if (this.speedBoostActive) this.score++;
+                if (this.speedBoostActive || this.jumpBoostActive) this.score++;
                 if (this.score % 500 === 0) {
                     this.gameSpeed += 0.5;
                 }
@@ -143,7 +143,7 @@
                         game.activateBusinessMode();
                     } else if (this.powerUp.type === 'speed') {
                         game.activateSpeedBoost();
-                    } else {
+                    } else if (this.powerUp.type === 'jump') {
                         game.activateJumpBoost();
                     }
 
