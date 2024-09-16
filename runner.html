@@ -110,9 +110,8 @@
                 }
 
                 this.obstacleTimer++;
-                if (!this.obstacleGap) // Math.random() * 40
-                    this.obstacleGap = Math.random() * 25 + 15 + 2 * this.gameSpeed + 2 * this.runner.isJumpBoost;
-
+                if (!this.obstacleGap)
+                    this.obstacleGap = 1.3 + this.gameSpeed * (2.8 + this.runner.isJumpBoost * 2/3);
                 if (this.obstacleTimer > this.obstacleGap) {
                     this.obstacleTimer = 0;
                     this.obstacleGap = 0;
@@ -242,8 +241,8 @@
                     { width: 60, height: 15, y: this.ground.y, color: '#000000', type: 'hole' }
                 ];
                 const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
-                const randomSpacing = Math.random() * 0; // Random spacing between 0 and 100
-                this.obstacles.push(new Obstacle(this.canvas.width + randomSpacing, type.y, type.width, type.height, type.color, type.type));
+                const spacing = Math.random() * 35 * this.gameSpeed;
+                this.obstacles.push(new Obstacle(this.canvas.width, spacing, type.y, type.width, type.height, type.color, type.type));
             }
 
             updateObstacles() {
@@ -1224,16 +1223,18 @@
         }
 
         class Obstacle {
-            constructor(x, y, width, height, color, type) {
-                this.x = x;
+            constructor(canvasWidth, spacing, y, width, height, color, type) {
+                this.canvasWidth = canvasWidth;
+                this.x = canvasWidth + spacing;
                 this.y = y;
                 this.width = width;
                 this.height = height;
                 this.color = color;
                 this.type = type;
+                this.spacing = spacing;
 
                 if (this.type === 'car') {
-                    this.carSpeed = Math.random() * 1 + 0.8;
+                    this.carSpeed = Math.random() * 1.2 + 0.8;
                     this.carColor = this.randomCarColor();
                 }
 
@@ -1263,8 +1264,10 @@
                 this.x -= gameSpeed;
                 
                 if (this.type === 'car') {
-                    // if (this.x > 400)
-                    this.x -= this.carSpeed;
+                    if ((this.spacing > 0) && (this.x < this.canvasWidth)) {
+                        this.x -= this.carSpeed;
+                        this.spacing -= this.carSpeed;
+                    }
                 }
 
                 else if (this.type === 'drone') {
