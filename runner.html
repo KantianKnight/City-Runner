@@ -111,7 +111,7 @@
 
                 this.obstacleTimer++;
                 if (!this.obstacleGap) // Math.random() * 40
-                    this.obstacleGap = Math.random() * 30 + 12 + 2 * this.gameSpeed;
+                    this.obstacleGap = Math.random() * 25 + 15 + 2 * this.gameSpeed + 2 * this.runner.isJumpBoost;
 
                 if (this.obstacleTimer > this.obstacleGap) {
                     this.obstacleTimer = 0;
@@ -1197,7 +1197,7 @@
                 if (!this.isJumping) {
                     this.isJumping = true;
                     if (this.isJumpBoost)
-                        this.jumpVelocity = -20;
+                        this.jumpVelocity = -19;
                     else
                         this.jumpVelocity = -15.5;
                 }
@@ -1233,14 +1233,15 @@
                 this.type = type;
 
                 if (this.type === 'car') {
+                    this.carSpeed = Math.random() * 1 + 0.8;
                     this.carColor = this.randomCarColor();
                 }
 
-                if (this.type === 'house') {
+                else if (this.type === 'house') {
                     this.houseColor = this.randomHouseColor();
                 }
 
-                if (this.type === 'drone') {
+                else if (this.type === 'drone') {
                     this.baseY = y;
                     this.angle = 0;
                     this.oscillationSpeed = Math.random() * 0.05 + 0.02; // Variable oscillation speed
@@ -1260,7 +1261,13 @@
 
             update(gameSpeed) {
                 this.x -= gameSpeed;
-                if (this.type === 'drone') {
+                
+                if (this.type === 'car') {
+                    // if (this.x > 400)
+                    this.x -= this.carSpeed;
+                }
+
+                else if (this.type === 'drone') {
                     this.angle += this.oscillationSpeed;
                     this.y = this.baseY + Math.sin(this.angle) * this.oscillationAmplitude;
                 }
@@ -1291,61 +1298,74 @@
                     ctx.fillRect(this.x + 4 * scale, this.y + 8 * scale, 3 * scale, 12 * scale);
                     ctx.fillRect(this.x + 9 * scale, this.y + 8 * scale, 3 * scale, 12 * scale);
                 }
+                
+                // // // Inverted Car
+                // if (this.type === 'car') {
+                //     const carWidth = this.width;
+                //     const carHeight = this.height;
+                //     const x = this.x;
+                //     const y = this.y;
 
-                // else if (this.type === 'car') {
-                //     ctx.fillStyle = this.carColor;
-                //     ctx.fillRect(this.x, this.y, this.width, this.height);
-                //     ctx.fillStyle = '#000000';
-                //     ctx.fillRect(this.x + 5, this.y + 20, 15, 15);
-                //     ctx.fillRect(this.x + this.width - 20, this.y + 20, 15, 15);
-                //     ctx.fillStyle = '#FFFFFF';
-                //     ctx.fillRect(this.x + 5, this.y + 5, 15, 10);
-                // }
-
-                // else if (this.type === 'car') {
                 //     // Main body
-                //     ctx.fillStyle = '#FFFFFF';  // White body
+                //     // ctx.fillStyle = '#FFFFFF';  // White body
+                //     ctx.fillStyle = this.carColor;
                 //     ctx.beginPath();
-                //     ctx.moveTo(this.x, this.y + this.height * 0.5);
-                //     ctx.lineTo(this.x + this.width * 0.1, this.y + this.height * 0.3);
-                //     ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.3);
-                //     ctx.lineTo(this.x + this.width * 0.9, this.y + this.height * 0.5);
-                //     ctx.lineTo(this.x + this.width, this.y + this.height * 0.7);
-                //     ctx.lineTo(this.x, this.y + this.height * 0.7);
+                //     ctx.moveTo(x, y + carHeight * 0.7);
+                //     ctx.lineTo(x + carWidth * 0.1, y + carHeight * 0.3);
+                //     ctx.lineTo(x + carWidth * 0.7, y + carHeight * 0.3);
+                //     ctx.lineTo(x + carWidth * 0.9, y + carHeight * 0.5);
+                //     ctx.lineTo(x + carWidth, y + carHeight * 0.7);
+                //     ctx.lineTo(x + carWidth, y + carHeight);
+                //     ctx.lineTo(x, y + carHeight);
                 //     ctx.closePath();
                 //     ctx.fill();
 
                 //     // Windows
                 //     ctx.fillStyle = '#1E3A8A';  // Dark blue for windows
                 //     ctx.beginPath();
-                //     ctx.moveTo(this.x + this.width * 0.15, this.y + this.height * 0.35);
-                //     ctx.lineTo(this.x + this.width * 0.25, this.y + this.height * 0.35);
-                //     ctx.lineTo(this.x + this.width * 0.35, this.y + this.height * 0.5);
-                //     ctx.lineTo(this.x + this.width * 0.15, this.y + this.height * 0.5);
+                //     ctx.moveTo(x + carWidth * 0.15, y + carHeight * 0.35);
+                //     ctx.lineTo(x + carWidth * 0.25, y + carHeight * 0.35);
+                //     ctx.lineTo(x + carWidth * 0.35, y + carHeight * 0.5);
+                //     ctx.lineTo(x + carWidth * 0.15, y + carHeight * 0.5);
                 //     ctx.closePath();
                 //     ctx.fill();
 
                 //     ctx.beginPath();
-                //     ctx.moveTo(this.x + this.width * 0.4, this.y + this.height * 0.35);
-                //     ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.35);
-                //     ctx.lineTo(this.x + this.width * 0.85, this.y + this.height * 0.5);
-                //     ctx.lineTo(this.x + this.width * 0.4, this.y + this.height * 0.5);
+                //     ctx.moveTo(x + carWidth * 0.4, y + carHeight * 0.35);
+                //     ctx.lineTo(x + carWidth * 0.7, y + carHeight * 0.35);
+                //     ctx.lineTo(x + carWidth * 0.85, y + carHeight * 0.5);
+                //     ctx.lineTo(x + carWidth * 0.4, y + carHeight * 0.5);
                 //     ctx.closePath();
                 //     ctx.fill();
 
                 //     // Wheels
                 //     ctx.fillStyle = '#000000';
                 //     ctx.beginPath();
-                //     ctx.arc(this.x + this.width * 0.25, this.y + this.height * 0.75, this.height * 0.15, 0, Math.PI * 2);
-                //     ctx.arc(this.x + this.width * 0.75, this.y + this.height * 0.75, this.height * 0.15, 0, Math.PI * 2);
+                //     ctx.arc(x + carWidth * 0.25, y + carHeight * 0.95, carHeight * 0.15, 0, Math.PI * 2);
+                //     ctx.arc(x + carWidth * 0.75, y + carHeight * 0.95, carHeight * 0.15, 0, Math.PI * 2);
                 //     ctx.fill();
+
+                //     // Wheel arches
+                //     ctx.strokeStyle = '#CCCCCC';
+                //     ctx.lineWidth = 2;
+                //     ctx.beginPath();
+                //     ctx.arc(x + carWidth * 0.25, y + carHeight * 0.95, carHeight * 0.2, Math.PI, Math.PI * 2);
+                //     ctx.stroke();
+                //     ctx.beginPath();
+                //     ctx.arc(x + carWidth * 0.75, y + carHeight * 0.95, carHeight * 0.2, Math.PI, Math.PI * 2);
+                //     ctx.stroke();
 
                 //     // Taillight
                 //     ctx.fillStyle = '#FF0000';  // Red for taillight
-                //     ctx.fillRect(this.x, this.y + this.height * 0.5, this.width * 0.05, this.height * 0.1);
+                //     ctx.fillRect(x, y + carHeight * 0.6, carWidth * 0.05, carHeight * 0.1);
+
+                //     // Headlight
+                //     ctx.fillStyle = '#FFFF00';  // Yellow for headlight
+                //     ctx.beginPath();
+                //     ctx.arc(x + carWidth * 0.95, y + carHeight * 0.65, carHeight * 0.08, 0, Math.PI * 2);
+                //     ctx.fill();
                 // }
 
-                // drawCar(ctx) {
                 if (this.type === 'car') {
                     const carWidth = this.width;
                     const carHeight = this.height;
@@ -1353,65 +1373,63 @@
                     const y = this.y;
 
                     // Main body
-                    // ctx.fillStyle = '#FFFFFF';  // White body
                     ctx.fillStyle = this.carColor;
                     ctx.beginPath();
-                    ctx.moveTo(x, y + carHeight * 0.7);
-                    ctx.lineTo(x + carWidth * 0.1, y + carHeight * 0.3);
-                    ctx.lineTo(x + carWidth * 0.7, y + carHeight * 0.3);
-                    ctx.lineTo(x + carWidth * 0.9, y + carHeight * 0.5);
-                    ctx.lineTo(x + carWidth, y + carHeight * 0.7);
-                    ctx.lineTo(x + carWidth, y + carHeight);
+                    ctx.moveTo(x + carWidth, y + carHeight * 0.7);
+                    ctx.lineTo(x + carWidth * 0.9, y + carHeight * 0.3);
+                    ctx.lineTo(x + carWidth * 0.3, y + carHeight * 0.3);
+                    ctx.lineTo(x + carWidth * 0.1, y + carHeight * 0.5);
+                    ctx.lineTo(x, y + carHeight * 0.7);
                     ctx.lineTo(x, y + carHeight);
+                    ctx.lineTo(x + carWidth, y + carHeight);
                     ctx.closePath();
                     ctx.fill();
 
                     // Windows
                     ctx.fillStyle = '#1E3A8A';  // Dark blue for windows
                     ctx.beginPath();
-                    ctx.moveTo(x + carWidth * 0.15, y + carHeight * 0.35);
-                    ctx.lineTo(x + carWidth * 0.25, y + carHeight * 0.35);
-                    ctx.lineTo(x + carWidth * 0.35, y + carHeight * 0.5);
-                    ctx.lineTo(x + carWidth * 0.15, y + carHeight * 0.5);
+                    ctx.moveTo(x + carWidth * 0.85, y + carHeight * 0.35);
+                    ctx.lineTo(x + carWidth * 0.75, y + carHeight * 0.35);
+                    ctx.lineTo(x + carWidth * 0.65, y + carHeight * 0.5);
+                    ctx.lineTo(x + carWidth * 0.85, y + carHeight * 0.5);
                     ctx.closePath();
                     ctx.fill();
 
                     ctx.beginPath();
-                    ctx.moveTo(x + carWidth * 0.4, y + carHeight * 0.35);
-                    ctx.lineTo(x + carWidth * 0.7, y + carHeight * 0.35);
-                    ctx.lineTo(x + carWidth * 0.85, y + carHeight * 0.5);
-                    ctx.lineTo(x + carWidth * 0.4, y + carHeight * 0.5);
+                    ctx.moveTo(x + carWidth * 0.6, y + carHeight * 0.35);
+                    ctx.lineTo(x + carWidth * 0.3, y + carHeight * 0.35);
+                    ctx.lineTo(x + carWidth * 0.15, y + carHeight * 0.5);
+                    ctx.lineTo(x + carWidth * 0.6, y + carHeight * 0.5);
                     ctx.closePath();
                     ctx.fill();
 
                     // Wheels
                     ctx.fillStyle = '#000000';
                     ctx.beginPath();
-                    ctx.arc(x + carWidth * 0.25, y + carHeight * 0.95, carHeight * 0.15, 0, Math.PI * 2);
                     ctx.arc(x + carWidth * 0.75, y + carHeight * 0.95, carHeight * 0.15, 0, Math.PI * 2);
+                    ctx.arc(x + carWidth * 0.25, y + carHeight * 0.95, carHeight * 0.15, 0, Math.PI * 2);
                     ctx.fill();
 
                     // Wheel arches
                     ctx.strokeStyle = '#CCCCCC';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.arc(x + carWidth * 0.25, y + carHeight * 0.95, carHeight * 0.2, Math.PI, Math.PI * 2);
-                    ctx.stroke();
-                    ctx.beginPath();
                     ctx.arc(x + carWidth * 0.75, y + carHeight * 0.95, carHeight * 0.2, Math.PI, Math.PI * 2);
                     ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + carWidth * 0.25, y + carHeight * 0.95, carHeight * 0.2, Math.PI, Math.PI * 2);
+                    ctx.stroke();
 
-                    // Taillight
+                    // Taillight (now on the right side)
                     ctx.fillStyle = '#FF0000';  // Red for taillight
-                    ctx.fillRect(x, y + carHeight * 0.6, carWidth * 0.05, carHeight * 0.1);
+                    ctx.fillRect(x + carWidth - carWidth * 0.05, y + carHeight * 0.6, carWidth * 0.05, carHeight * 0.1);
 
-                    // Headlight
+                    // Headlight (now on the left side)
                     ctx.fillStyle = '#FFFF00';  // Yellow for headlight
                     ctx.beginPath();
-                    ctx.arc(x + carWidth * 0.95, y + carHeight * 0.65, carHeight * 0.08, 0, Math.PI * 2);
+                    ctx.arc(x + carWidth * 0.05, y + carHeight * 0.65, carHeight * 0.08, 0, Math.PI * 2);
                     ctx.fill();
                 }
-                // }
 
                 else if (this.type === 'house') {
                     let groundY = this.y + this.height;
@@ -1446,19 +1464,6 @@
                     ctx.closePath();
                     ctx.fill();
                 }
-                
-                // else if (this.type === 'house') {
-                //     ctx.fillStyle = this.houseColor;
-                //     ctx.fillRect(this.x, this.y, this.width, this.height);
-                //     ctx.fillStyle = '#FFFFFF';
-                //     for (let i = 0; i < 3; i++) {
-                //         for (let j = 0; j < 2; j++) {
-                //             ctx.fillRect(this.x + 10 + i * 20, this.y + 10 + j * 20, 10, 10);
-                //         }
-                //     }
-                //     ctx.fillStyle = '#8B4513';
-                //     ctx.fillRect(this.x + 25, this.y + 40, 10, 30);
-                // } 
                 
                 else if (this.type === 'drone') {
                     ctx.fillStyle = '#303030';
