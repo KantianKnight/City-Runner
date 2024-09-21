@@ -104,13 +104,14 @@
                 this.sky.update(this.gameSpeed);
                 
                 this.score++; 
-                if (this.speedBoostActive || this.jumpBoostActive) this.score++;
+                if (this.speedBoostActive) this.score++;
+                if (this.jumpBoostActive) this.score++;
                 this.gameSpeed = this.initialGameSpeed + this.speedBoostActive + this.score / 250 * .25;
                 // Set speed this way, otherwise might not increase speed when you gain +2 or +100
 
                 this.obstacleTimer++;
                 if (!this.obstacleGap)
-                    this.obstacleGap = 1.3 + this.gameSpeed * (3 + this.runner.isJumpBoost * 2/3);
+                    this.obstacleGap = 6.5 + this.gameSpeed * (2 + this.runner.isJumpBoost * 2/3);
                 if (this.obstacleTimer > this.obstacleGap) {
                     this.obstacleTimer = 0;
                     this.obstacleGap = 0;
@@ -379,7 +380,7 @@
                             this.sounds.crash.play();
 
                             // Destroy obstacle and add bonus points
-                            this.score += 100;
+                            this.score += 75;
                             this.obstacles = this.obstacles.filter(obs => obs !== obstacle);
                             return false;
                         }
@@ -1973,7 +1974,6 @@
         }
 
         gameLoop();
-
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space' || event.code === 'ArrowUp') {
                 if (game.state === GameState.START || game.state === GameState.GAME_OVER) {
