@@ -105,13 +105,12 @@
                 
                 this.score++; 
                 if (this.speedBoostActive || this.jumpBoostActive) this.score++;
-                if (this.score % 500 === 0) {
-                    this.gameSpeed += 0.5;
-                }
+                this.gameSpeed = this.initialGameSpeed + this.speedBoostActive + this.score / 250 * 2.5;
+                // Set speed this way, otherwise might not increase speed when you gain +2 or +100
 
                 this.obstacleTimer++;
                 if (!this.obstacleGap)
-                    this.obstacleGap = 1.3 + this.gameSpeed * (2.8 + this.runner.isJumpBoost * 2/3);
+                    this.obstacleGap = 1.3 + this.gameSpeed * (3 + this.runner.isJumpBoost * 2/3);
                 if (this.obstacleTimer > this.obstacleGap) {
                     this.obstacleTimer = 0;
                     this.obstacleGap = 0;
@@ -181,6 +180,33 @@
                         this.deactivateJumpBoost();
                     }
                 }
+            }
+
+            startGame() {
+                this.state = GameState.PLAYING;
+                this.score = 0;
+                this.gameSpeed = this.initialGameSpeed = 6.5;
+                this.obstacles = [];
+                this.runner.reset();
+                this.obstacleTimer = 0;
+            }
+
+            pauseGame() {
+                if (this.state === GameState.PLAYING) {
+                    this.state = GameState.PAUSED;
+                } else if (this.state === GameState.PAUSED) {
+                    this.state = GameState.PLAYING;
+                }
+            }
+
+            endGame() {
+                this.state = GameState.GAME_OVER;
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    this.setHighScore(this.highScore);
+                }
+                this.sounds.gameOver.play();
+                this.deactivateSpeedBoost();
             }
 
             createParticles(x, y) {
@@ -255,11 +281,6 @@
             }
 
             drawScore() {
-                // this.ctx.fillStyle = 'black';
-                // this.ctx.font = '20px Arial';
-                // this.ctx.fillText(`Score: ${this.score}`, 10, 30);
-                // this.ctx.fillText(`High Score: ${this.highScore}`, 10, 60);
-
                 // Set the font and size
                 this.ctx.font = '22px "Press Start 2P", monospace';
 
@@ -279,11 +300,6 @@
                 highScoreGradient.addColorStop(0.5, '#FFA500');
                 highScoreGradient.addColorStop(1, '#FF4500');
 
-                // // Draw the score and high score with a semi-transparent background
-                // this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                // this.ctx.fillRect(10, 10, scoreWidth + 20, 40);
-                // this.ctx.fillRect(10, 50, highScoreWidth + 20, 40);
-
                 // Set the gradient as the fill style for the score and high score text
                 this.ctx.textAlign = 'left';
                 this.ctx.fillStyle = scoreGradient;
@@ -295,12 +311,6 @@
             drawStartScreen() {
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // this.ctx.fillStyle = 'white';
-                // this.ctx.font = '40px Arial';
-                // this.ctx.fillText('City Runner', 310, 180);
-                // this.ctx.font = '20px Arial';
-                // this.ctx.fillText('Press SPACE to start', 310, 220);
 
                 // Use a retro-inspired font
                 this.ctx.font = '60px "VT323", monospace';
@@ -340,33 +350,6 @@
 
                 this.ctx.font = '18px "VT323", monospace';
                 this.ctx.fillText('Press P to resume', this.canvas.width / 2, 300);
-            }
-
-            startGame() {
-                this.state = GameState.PLAYING;
-                this.score = 0;
-                this.gameSpeed = 6.5;
-                this.obstacles = [];
-                this.runner.reset();
-                this.obstacleTimer = 0;
-            }
-
-            pauseGame() {
-                if (this.state === GameState.PLAYING) {
-                    this.state = GameState.PAUSED;
-                } else if (this.state === GameState.PAUSED) {
-                    this.state = GameState.PLAYING;
-                }
-            }
-
-            endGame() {
-                this.state = GameState.GAME_OVER;
-                if (this.score > this.highScore) {
-                    this.highScore = this.score;
-                    this.setHighScore(this.highScore);
-                }
-                this.sounds.gameOver.play();
-                this.deactivateSpeedBoost();
             }
 
             checkPowerUpCollision() {
@@ -434,7 +417,7 @@
             activateSpeedBoost() {
                 if (!this.speedBoostActive) {
                     this.speedBoostActive = true;
-                    this.gameSpeed++;
+                    // this.gameSpeed++;
                 }
 
                 this.speedBoostTimer = 0;
@@ -443,7 +426,7 @@
 
             deactivateSpeedBoost() {
                 this.speedBoostActive = false;
-                this.gameSpeed--;
+                // this.gameSpeed--;
                 this.runner.deactivateSpeedBoost();
             }
 
