@@ -207,7 +207,9 @@
                     this.setHighScore(this.highScore);
                 }
                 this.sounds.gameOver.play();
+                this.deactivateBusinessMode();
                 this.deactivateSpeedBoost();
+                this.deactivateJumpBoost();
             }
 
             createParticles(x, y) {
