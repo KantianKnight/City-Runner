@@ -1,6 +1,6 @@
 A mini project for those who find Google's dinosaur game too simple.  
 
-Download runner.html to start playing.
+Download index.html to start playing.
 
 **Controls**
 1. Press Spacebar or Up Arrow to jump.
