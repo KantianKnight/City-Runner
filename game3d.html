@@ -1588,6 +1588,56 @@
             }
         });
 
+        // ===== TOUCH CONTROLS =====
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        let isDucking = false;
+        const SWIPE_THRESHOLD = 30; // pixels to trigger swipe down
+
+        document.addEventListener('touchstart', (event) => {
+            event.preventDefault();
+            touchStartY = event.touches[0].clientY;
+            touchStartTime = Date.now();
+            isDucking = false;
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (event) => {
+            event.preventDefault();
+            const deltaY = event.touches[0].clientY - touchStartY;
+
+            // Swipe down to duck
+            if (deltaY > SWIPE_THRESHOLD && !isDucking) {
+                isDucking = true;
+                if (game.state === GameState.PLAYING) {
+                    runnerState.duck();
+                }
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', (event) => {
+            event.preventDefault();
+            const touchDuration = Date.now() - touchStartTime;
+
+            // If was ducking, stand up
+            if (isDucking) {
+                runnerState.stand();
+                isDucking = false;
+                return;
+            }
+
+            // Tap to jump (short touch without swipe)
+            if (touchDuration < 300) {
+                if (game.state === GameState.START || game.state === GameState.GAME_OVER) {
+                    game.startGame();
+                } else if (game.state === GameState.PLAYING) {
+                    if (!runnerState.isJumping) {
+                        runnerState.jump();
+                        sounds.jump.play();
+                    }
+                }
+            }
+        }, { passive: false });
+
         // ===== RESIZE =====
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
